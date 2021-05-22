@@ -1,0 +1,11 @@
+This directory (and version of CentOS) is deprecated.  For normal users,
+you should use /6/ and not /6.8/ in your path. Please see this FAQ
+concerning the CentOS release scheme:
+
+https://wiki.centos.org/FAQ/General
+
+If you know what you are doing, and absolutely want to remain at the 6.8
+level, go to http://vault.centos.org/ for packages. 
+
+Please keep in mind that 6.0, 6.1, 6.2, 6.3, 6.4 , 6.5, 6.6, 6.7 and 6.8 no longer gets any updates, nor
+any security fix's.
