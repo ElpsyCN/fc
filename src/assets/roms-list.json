@@ -1,0 +1,93 @@
+[
+  {
+    "name": "超级玛丽",
+    "path": "Super Mario Bros. (JU) (PRG0) [!].nes"
+  },
+  {
+    "name": "冒险岛",
+    "path": "maoxiandao.nes"
+  },
+  {
+    "name": "魂斗罗",
+    "path": "hun.nes"
+  },
+  {
+    "name": "中国象棋",
+    "path": "Zhong Guo Xiang Qi.nes"
+  },
+  {
+    "name": "坦克大战",
+    "path": "tanke.nes"
+  },
+  {
+    "name": "雪人兄弟",
+    "path": "xueren.nes"
+  },
+  {
+    "name": "越野摩托",
+    "path": "Motor.nes"
+  },
+  {
+    "name": "赤影战士",
+    "path": "Kage.nes"
+  },
+  {
+    "name": "炸弹人",
+    "path": "zhadan.nes"
+  },
+  {
+    "name": "马戏团",
+    "path": "ma.nes"
+  },
+  {
+    "name": "影子传说",
+    "path": "Kage.nes"
+  },
+  {
+    "name": "沙罗曼蛇",
+    "path": "life-force.nes"
+  },
+  {
+    "name": "双截龙2",
+    "path": "Double Dragon2.nes"
+  },
+  {
+    "name": "脱狱",
+    "path": "Cross Fire (J).nes"
+  },
+  {
+    "name": "功夫",
+    "path": "(J) (V1.2) Yie Ar Kung-Fu [!].nes"
+  },
+  {
+    "name": "三目童子",
+    "path": "3.nes"
+  },
+  { "name": "恶魔城1", "path": "emc.nes" },
+  {
+    "name": "洛克人1",
+    "path": "lkr.nes"
+  },
+  { "name": "人间兵器", "path": "rjbq.nes" },
+  {
+    "name": "忍者神龟1",
+    "path": "sg1.nes"
+  },
+  {
+    "name": "激龟快打",
+    "path": "sg4.nes"
+  },
+  {
+    "name": "泡泡龙2",
+    "path": "ppl2.nes"
+  },
+  {
+    "name": "西游记1",
+    "path": "xyj.nes"
+  },
+
+  {
+    "name": "淘金者",
+    "path": "Championship Lode Runner (J).nes"
+  }
+]
