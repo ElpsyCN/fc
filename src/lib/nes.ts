@@ -96,6 +96,32 @@ export function createNes(canvasId: string) {
 
   return {
     /**
+     * 实例
+     */
+    instance: nes,
+
+    /**
+     * 绑定按钮
+     * @param button
+     * @returns
+     */
+    bindButton(name: string) {
+      const buttonName = "BUTTON_" + name;
+      const btn = document.querySelector(
+        `[role="${buttonName}"]`
+      ) as HTMLElement;
+      if (!btn) {
+        return;
+      }
+      btn.onmousedown = () => {
+        nes.buttonDown(1, jsnes.Controller[buttonName]);
+      };
+      btn.onmouseup = () => {
+        nes.buttonUp(1, jsnes.Controller[buttonName]);
+      };
+    },
+
+    /**
      * 加载 ROM
      * @param url 路径
      */

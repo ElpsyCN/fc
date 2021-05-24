@@ -60,62 +60,6 @@ body {
   flex-direction: row;
 }
 
-.controller {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  align-self: flex-end;
-  filter: drop-shadow(5px 5px 0px rgba(255, 255, 255, 0.8));
-}
-
-.controller button {
-  position: absolute;
-  z-index: 1;
-  border: 8px solid #474f51;
-  background: #857b7a;
-  color: transparent;
-  border-radius: 15px;
-  box-sizing: border-box;
-  outline: 0;
-  width: 56px;
-  height: 56px;
-  left: 50%;
-  top: 50%;
-  user-select: none;
-  transform: translate(-50%, -50%);
-}
-
-.controller::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  box-sizing: border-box;
-  left: 50%;
-  top: 50%;
-  width: 56px;
-  height: 56px;
-  background: #857b7a;
-  transform: translate(-50%, -50%);
-}
-
-.controller::after {
-  content: "";
-  z-index: 2;
-  position: absolute;
-  pointer-events: none;
-  box-sizing: border-box;
-  width: 42px;
-  height: 42px;
-  border: 8px solid #474f51;
-  border-radius: 50%;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: inset 0px 8px 0 0px #736a6d,
-    inset 0px -8px 0 0px rgba(255, 255, 255, 0.4);
-}
-
 button.up.joydirection {
   top: 0;
   transform: translate(-50%, 0);
@@ -183,30 +127,6 @@ button.left.joydirection {
   /*color: transparent;莫*/
   color: #000000;
   border-radius: 15px;
-}
-
-.action {
-  display: flex;
-  align-self: flex-end;
-}
-
-.action button {
-  user-select: none;
-  width: 56px;
-  height: 56px;
-  background: #857b7a;
-  border-radius: 50%;
-  outline: 0;
-  /*color: transparent;莫*/
-  color: #000000;
-  border: 8px solid #474f51;
-  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.8),
-    inset 5px 8px 0 0px rgba(255, 255, 255, 0.4),
-    inset -5px -8px 0 0px rgba(0, 0, 0, 0.1);
-}
-
-.action button:first-child {
-  margin-right: 24px;
 }
 
 .sign {
@@ -367,16 +287,9 @@ button.left.joydirection {
     margin-bottom: 0;
     max-height: 300px;
   }
-  .function button {
-    width: 56px;
-    margin: 10px;
-  }
   .action-area {
     flex: 1;
     justify-content: flex-end;
-  }
-  .action button:first-child {
-    margin-right: 20px;
   }
 }
 

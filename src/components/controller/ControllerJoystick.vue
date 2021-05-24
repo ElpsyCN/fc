@@ -1,0 +1,73 @@
+<template>
+  <div class="controller">
+    <div id="controls-direction">
+      <button role="BUTTON_UP" class="up joydirection">up</button>
+      <button role="BUTTON_RIGHT" class="right joydirection">right</button>
+      <button role="BUTTON_DOWN" class="down joydirection">down</button>
+      <button role="BUTTON_LEFT" class="left joydirection">left</button>
+    </div>
+  </div>
+</template>
+
+<style lang="scss">
+.controller {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  align-self: flex-end;
+  filter: drop-shadow(5px 5px 0px rgba(255, 255, 255, 0.8));
+
+  button {
+    position: absolute;
+    z-index: 1;
+    border: 8px solid #474f51;
+    background: #857b7a;
+    color: transparent;
+    border-radius: 15px;
+    box-sizing: border-box;
+    outline: 0;
+    width: 56px;
+    height: 56px;
+    left: 50%;
+    top: 50%;
+    user-select: none;
+    transform: translate(-50%, -50%);
+    transition: 0.2s;
+
+    &:active {
+      border-radius: 12px;
+    }
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    box-sizing: border-box;
+    left: 50%;
+    top: 50%;
+    width: 56px;
+    height: 56px;
+    background: #857b7a;
+    transform: translate(-50%, -50%);
+  }
+
+  &::after {
+    content: "";
+    z-index: 2;
+    position: absolute;
+    pointer-events: none;
+    box-sizing: border-box;
+    width: 42px;
+    height: 42px;
+    border: 8px solid #474f51;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0px 8px 0 0px #736a6d,
+      inset 0px -8px 0 0px rgba(255, 255, 255, 0.4);
+  }
+}
+</style>
