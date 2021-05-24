@@ -1,53 +1,9 @@
 <template>
-  <audio
-    style="display: none; height: 0"
-    id="bg-music"
-    preload="auto"
-    src="media/bgm.mp3"
-  ></audio>
-  <!--<embed src="bgm.mp3" hidden="true" autostart="true"/>-->
   <div class="main">
     <div class="panel">
       <div class="controller-area">
         <div class="controller">
-          <div id="controls-direction">
-            <button
-              role="BUTTON_UP"
-              class="up joydirection"
-              id="joystick_btn_up"
-              @mousedown="buttonDown('UP')"
-              @mouseup="buttonUp('UP')"
-            >
-              up
-            </button>
-            <button
-              role="BUTTON_RIGHT"
-              class="right joydirection"
-              id="joystick_btn_right"
-              @mousedown="buttonDown('RIGHT')"
-              @mouseup="buttonUp('RIGHT')"
-            >
-              right
-            </button>
-            <button
-              role="BUTTON_DOWN"
-              class="down joydirection"
-              id="joystick_btn_down"
-              @mousedown="buttonDown('DOWN')"
-              @mouseup="buttonUp('DOWN')"
-            >
-              down
-            </button>
-            <button
-              role="BUTTON_LEFT"
-              class="left joydirection"
-              id="joystick_btn_left"
-              @mousedown="buttonDown('LEFT')"
-              @mouseup="buttonUp('LEFT')"
-            >
-              left
-            </button>
-          </div>
+          <game-controller />
         </div>
         <div class="joy">I</div>
         <div>
@@ -70,54 +26,13 @@
                 style="width: 100%"
               />
             </div>
-
             <game-menu />
           </div>
         </div>
-        <div class="function">
-          <button
-            class="controls-center-select joybtn"
-            id="joystick_btn_select"
-            role="BUTTON_SELECT"
-            @mousedown="buttonDown('SELECT')"
-            @mouseup="buttonUp('SELECT')"
-          >
-            Select
-          </button>
-          <button
-            class="controls-center-start joybtn"
-            id="joystick_btn_start"
-            role="BUTTON_START"
-            @mousedown="buttonDown('START')"
-            @mouseup="buttonUp('START')"
-          >
-            Pause
-          </button>
-        </div>
+        <controller-function />
       </div>
       <div class="action-area">
-        <div class="action">
-          <div id="controls-fire">
-            <button
-              class="a joybtn"
-              role="BUTTON_A"
-              id="joystick_btn_A"
-              @mousedown="buttonDown('A')"
-              @mouseup="buttonUp('A')"
-            >
-              A
-            </button>
-            <button
-              class="b joybtn"
-              role="BUTTON_B"
-              id="joystick_btn_B"
-              @mousedown="buttonDown('B')"
-              @mouseup="buttonUp('B')"
-            >
-              B
-            </button>
-          </div>
-        </div>
+        <controller-action />
       </div>
       <div class="sign">
         FAMILY <br />
@@ -129,27 +44,33 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import GameController from "./GameController.vue";
 import GameMenu from "./GameMenu.vue";
+import { createNes } from "../lib/nes";
+import { buttonDown, buttonUp } from "../lib/helper";
+import ControllerAction from "./controller/ControllerAction.vue";
+import ControllerFunction from "./controller/ControllerFunction.vue";
 
 export default defineComponent({
   components: {
+    GameController,
     GameMenu,
+    ControllerAction,
+    ControllerFunction,
   },
   mounted() {
-    window.onload = function () {
+    this.$nextTick(() => {
+      const defaultRom = "roms/Super Mario Bros. (JU) (PRG0) [!].nes";
+      const nesApp = createNes("nes-canvas");
+      nesApp?.load(defaultRom);
+
       // @ts-ignore
-      nes_load_url("nes-canvas", "roms/Super Mario Bros. (JU) (PRG0) [!].nes");
-    };
+      window.nesApp = nesApp;
+    });
   },
   methods: {
-    buttonDown(button: string) {
-      // @ts-ignore
-      nes.buttonDown(1, jsnes.Controller["BUTTON_" + button]);
-    },
-    buttonUp(button: string) {
-      // @ts-ignore
-      nes.buttonUp(1, jsnes.Controller["BUTTON_" + button]);
-    },
+    buttonDown,
+    buttonUp,
   },
 });
 </script>

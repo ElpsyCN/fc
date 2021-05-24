@@ -13,9 +13,11 @@
     "sass": "^1.34.0",
     "typescript": "^4.2.4",
     "vite": "^2.3.3",
-    "vue-tsc": "^0.1.4"
+    "vue-tsc": "^0.1.5"
   },
   "dependencies": {
+    "axios": "^0.21.1",
+    "jsnes": "^1.1.0",
     "vue": "^3.0.11"
   }
 }
