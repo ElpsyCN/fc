@@ -4,14 +4,7 @@
       <div class="controller-area">
         <controller-joystick />
         <div class="joy">I</div>
-        <div>
-          <a
-            href="https://upyun.yunyoujun.cn/images/tackout-assistant-qrcode.jpg!/format/jpg"
-            target="_blank"
-            class="readme"
-            >瓜子饮料</a
-          >
-        </div>
+        <sponsor-adsense />
       </div>
       <div class="function-area">
         <div class="screen">
@@ -47,6 +40,7 @@ import { createNes } from "../lib/nes";
 import ControllerAction from "./controller/ControllerAction.vue";
 import ControllerFunction from "./controller/ControllerFunction.vue";
 import ControllerJoystick from "./controller/ControllerJoystick.vue";
+import SponsorAdsense from "./SponsorAdsense.vue";
 
 export default defineComponent({
   components: {
@@ -54,6 +48,7 @@ export default defineComponent({
     ControllerAction,
     ControllerFunction,
     ControllerJoystick,
+    SponsorAdsense,
   },
   mounted() {
     this.$nextTick(() => {

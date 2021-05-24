@@ -113,12 +113,19 @@ export function createNes(canvasId: string) {
       if (!btn) {
         return;
       }
-      btn.onmousedown = () => {
+
+      const onButtonDown = () => {
         nes.buttonDown(1, jsnes.Controller[buttonName]);
       };
-      btn.onmouseup = () => {
+
+      const onButtonUp = () => {
         nes.buttonUp(1, jsnes.Controller[buttonName]);
       };
+
+      btn.ontouchstart = onButtonDown;
+      btn.onmousedown = onButtonDown;
+      btn.ontouchend = onButtonUp;
+      btn.onmouseup = onButtonUp;
     },
 
     /**
