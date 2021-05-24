@@ -1,7 +1,7 @@
 <template>
   <div class="nes-roms">
-    <select v-model="currentGame" @change="selectGame">
-      <option disabled selected>选择游戏...</option>
+    <select class="nes-select" v-model="currentGame" @change="selectGame">
+      <option disabled selected value="default">选择游戏...</option>
       <optgroup label="经典">
         <option
           v-for="(rom, i) in romsList"
@@ -23,7 +23,7 @@ import romsList from "../assets/roms-list.json";
 export default defineComponent({
   data() {
     return {
-      currentGame: "选择游戏...",
+      currentGame: "default",
       romsList,
     };
   },
@@ -34,8 +34,18 @@ export default defineComponent({
     selectGame() {
       const rom = this.currentGame;
       // @ts-ignore
-      nes_load_url("nes-canvas", rom);
+      nesApp.load(rom);
     },
   },
 });
 </script>
+
+<style lang="scss">
+.nes-select {
+  outline: none;
+  border: none;
+  height: 1.5rem;
+  padding: 0.2rem;
+  border-radius: 2px;
+}
+</style>
