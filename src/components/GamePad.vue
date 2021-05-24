@@ -2,9 +2,7 @@
   <div class="main">
     <div class="panel">
       <div class="controller-area">
-        <div class="controller">
-          <game-controller />
-        </div>
+        <controller-joystick />
         <div class="joy">I</div>
         <div>
           <a
@@ -44,33 +42,40 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import GameController from "./GameController.vue";
 import GameMenu from "./GameMenu.vue";
 import { createNes } from "../lib/nes";
-import { buttonDown, buttonUp } from "../lib/helper";
 import ControllerAction from "./controller/ControllerAction.vue";
 import ControllerFunction from "./controller/ControllerFunction.vue";
+import ControllerJoystick from "./controller/ControllerJoystick.vue";
 
 export default defineComponent({
   components: {
-    GameController,
     GameMenu,
     ControllerAction,
     ControllerFunction,
+    ControllerJoystick,
   },
   mounted() {
     this.$nextTick(() => {
       const defaultRom = "roms/Super Mario Bros. (JU) (PRG0) [!].nes";
       const nesApp = createNes("nes-canvas");
-      nesApp?.load(defaultRom);
-
       // @ts-ignore
       window.nesApp = nesApp;
+      if (!nesApp) {
+        console.log("NES 初始化失败！");
+        return;
+      }
+      nesApp.load(defaultRom);
+
+      nesApp.bindButton("LEFT");
+      nesApp.bindButton("RIGHT");
+      nesApp.bindButton("UP");
+      nesApp.bindButton("DOWN");
+      nesApp.bindButton("SELECT");
+      nesApp.bindButton("START");
+      nesApp.bindButton("A");
+      nesApp.bindButton("B");
     });
-  },
-  methods: {
-    buttonDown,
-    buttonUp,
   },
 });
 </script>
