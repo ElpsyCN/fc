@@ -1,7 +1,15 @@
 {
   "name": "fc",
   "version": "0.0.1",
-  "repository": "https://github.com/ElpsyCN/fc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElpsyCN/fc"
+  },
+  "author": {
+    "url": "https://www.yunyoujun.cn",
+    "email": "me@yunyoujun.cn",
+    "name": "YunYouJun"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
@@ -12,8 +20,8 @@
     "@vue/compiler-sfc": "^3.0.11",
     "sass": "^1.34.0",
     "typescript": "^4.2.4",
-    "vite": "^2.3.3",
-    "vue-tsc": "^0.1.5"
+    "vite": "^2.3.4",
+    "vue-tsc": "^0.1.6"
   },
   "dependencies": {
     "axios": "^0.21.1",

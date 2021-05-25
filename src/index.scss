@@ -11,6 +11,10 @@ body {
   user-select: none;
 }
 
+button {
+  cursor: pointer;
+}
+
 .main {
   position: absolute;
   left: 0;
@@ -60,51 +64,6 @@ body {
   flex-direction: row;
 }
 
-button.up.joydirection {
-  top: 0;
-  transform: translate(-50%, 0);
-  border-bottom: 0;
-  height: 50px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-  box-shadow: inset 0px 8px 0 0px rgba(255, 255, 255, 0.5);
-}
-
-button.right.joydirection {
-  left: auto;
-  right: 0;
-  transform: translate(0, -50%);
-  border-left: 0;
-  width: 50px;
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
-  box-shadow: inset 8px 0 0 0px #857b7a,
-    inset 6px 6px 0 0px rgba(255, 255, 255, 0.4),
-    inset 8px -8px 0 0px rgba(0, 0, 0, 0.1);
-}
-
-button.down.joydirection {
-  top: auto;
-  transform: translate(-50%, 0);
-  bottom: 0;
-  border-top: 0;
-  height: 50px;
-  border-top-right-radius: 0;
-  border-top-left-radius: 0;
-  box-shadow: inset 0px -8px 0 0px rgba(0, 0, 0, 0.1);
-}
-
-button.left.joydirection {
-  left: 0;
-  transform: translate(0, -50%);
-  border-right: 0;
-  width: 50px;
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-  box-shadow: inset 0px 8px 0 0px rgba(255, 255, 255, 0.4),
-    inset -8px 0px 0 0px #857b7a, inset -8px -8px 0 0px rgba(0, 0, 0, 0.1);
-}
-
 .function {
   display: flex;
   padding: 8px 15px;
@@ -112,21 +71,6 @@ button.left.joydirection {
   align-self: center;
   background: #da4a4a;
   box-shadow: 5px 5px 0 rgba(255, 255, 255, 0.8);
-}
-
-.function button {
-  user-select: none;
-  margin: 10px;
-  height: 24px;
-  width: 60px;
-  outline: 0;
-  /*border: 8px solid #474f51;莫*/
-  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.1),
-    inset 4px 4px 0 0px rgba(255, 255, 255, 0.4);
-  background: #857b7a;
-  /*color: transparent;莫*/
-  color: #000000;
-  border-radius: 15px;
 }
 
 .sign {
