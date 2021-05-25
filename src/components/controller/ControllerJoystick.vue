@@ -10,6 +10,53 @@
 </template>
 
 <style lang="scss">
+.joydirection {
+  &.up {
+    top: 0;
+    transform: translate(-50%, 0);
+    border-bottom: 0;
+    height: 50px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: inset 0px 8px 0 0px rgba(255, 255, 255, 0.5);
+  }
+
+  &.right {
+    left: auto;
+    right: 0;
+    transform: translate(0, -50%);
+    border-left: 0;
+    width: 50px;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    box-shadow: inset 8px 0 0 0px #857b7a,
+      inset 6px 6px 0 0px rgba(255, 255, 255, 0.4),
+      inset 8px -8px 0 0px rgba(0, 0, 0, 0.1);
+  }
+
+  &.down {
+    top: auto;
+    transform: translate(-50%, 0);
+    bottom: 0;
+    border-top: 0;
+    height: 50px;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    box-shadow: inset 0px -8px 0 0px rgba(0, 0, 0, 0.1);
+  }
+
+  &.left {
+    left: 0;
+    transform: translate(0, -50%);
+    border-right: 0;
+    width: 50px;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    box-shadow: inset 0px 8px 0 0px rgba(255, 255, 255, 0.4),
+      inset -8px 0px 0 0px #857b7a, inset -8px -8px 0 0px rgba(0, 0, 0, 0.1);
+  }
+}
+
 .controller {
   position: relative;
   width: 140px;
@@ -33,10 +80,6 @@
     user-select: none;
     transform: translate(-50%, -50%);
     transition: 0.2s;
-
-    &:active {
-      border-radius: 12px;
-    }
   }
 
   &::before {

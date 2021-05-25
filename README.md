@@ -27,8 +27,8 @@ pnpm dev
 | 游戏按键 | 键盘             |
 | -------- | ---------------- |
 | 上下左右 | 方向键           |
-| Start    | <kbd>Enter</kbd> |
-| Select   | <kbd>Tab</kbd>   |
+| START    | <kbd>Enter</kbd> |
+| SELECT   | <kbd>Tab</kbd>   |
 | A        | <kbd>A</kbd>     |
 | B        | <kbd>S</kbd>     |
 
