@@ -4,7 +4,9 @@
 
 > 预览地址: <https://fc.elpsy.cn>
 
-源代码来源不可考，ROM 基于 [JSNES](https://github.com/bfirsh/jsnes) 运行。
+使用 vue + vite + ts 重构 [dafeiyu / jsnes](https://gitee.com/feiyu22/jsnes)。
+
+ROM 基于 [JSNES](https://github.com/bfirsh/jsnes) 运行。
 
 ## Usage
 
@@ -31,6 +33,14 @@ pnpm dev
 | SELECT   | <kbd>Tab</kbd>   |
 | A        | <kbd>A</kbd>     |
 | B        | <kbd>S</kbd>     |
+
+## Features
+
+- 使用 Vue + Vite + TypeScript 重构
+- 增加了点击按钮时的样式反馈
+- 添加按钮名称
+- 绑定了 PC 按钮
+- 使用新版的 [JSNES](https://jsnes.org/) CDN
 
 ## Todo
 
