@@ -1,16 +1,84 @@
 <template>
-  <div class="controller">
+  <div id="joystick" class="controller joystick">
     <div id="controls-direction">
-      <button role="BUTTON_UP" class="up joydirection">up</button>
-      <button role="BUTTON_RIGHT" class="right joydirection">right</button>
-      <button role="BUTTON_DOWN" class="down joydirection">down</button>
-      <button role="BUTTON_LEFT" class="left joydirection">left</button>
+      <button
+        v-for="(direction, i) in directions"
+        :key="i"
+        :role="'BUTTON_' + direction"
+        :class="['joystick-btn', direction.toLowerCase()]"
+        @touchstart="onButtonDown(direction)"
+        @touchend="onButtonUp"
+      >
+        {{ direction }}
+      </button>
     </div>
   </div>
 </template>
 
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  data() {
+    return {
+      directions: ["LEFT", "RIGHT", "UP", "DOWN"],
+    };
+  },
+  mounted() {},
+  methods: {
+    onButtonDown(direction: string) {
+      const joystick = document.getElementById("joystick");
+      if (!joystick) {
+        return;
+      }
+
+      let axis = "X";
+      let deg = 8;
+      let isNeagtive = false;
+      switch (direction) {
+        case "UP":
+          axis = "X";
+          isNeagtive = false;
+          break;
+        case "DOWN":
+          axis = "X";
+          isNeagtive = true;
+          break;
+        case "LEFT":
+          axis = "Y";
+          isNeagtive = true;
+          break;
+        case "RIGHT":
+          axis = "Y";
+          isNeagtive = false;
+        default:
+          break;
+      }
+      joystick.style.transform = `rotate${axis}(${
+        isNeagtive ? "-" : ""
+      }${deg}deg)`;
+    },
+
+    /**
+     * 恢复样式
+     */
+    onButtonUp() {
+      const joystick = document.getElementById("joystick");
+      if (joystick) {
+        joystick.style.transform = "";
+      }
+    },
+  },
+});
+</script>
+
+
 <style lang="scss">
-.joydirection {
+#joystick {
+  filter: drop-shadow(2px 2px 2px black);
+}
+
+.joystick-btn {
   &.up {
     top: 0;
     transform: translate(-50%, 0);
