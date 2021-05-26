@@ -70,6 +70,12 @@ export default defineComponent({
       nesApp.bindButton("START");
       nesApp.bindButton("A");
       nesApp.bindButton("B");
+
+      document.querySelectorAll("button").forEach((el) => {
+        el.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+        });
+      });
     });
   },
 });

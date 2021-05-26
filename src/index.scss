@@ -57,6 +57,7 @@ button {
   z-index: 10;
   display: flex;
   flex-direction: row;
+  perspective: 400px;
 }
 
 .action-area {
