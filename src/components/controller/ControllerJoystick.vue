@@ -6,7 +6,9 @@
         :key="i"
         :role="'BUTTON_' + direction"
         :class="['joystick-btn', direction.toLowerCase()]"
+        @mousedown="onButtonDown(direction)"
         @touchstart="onButtonDown(direction)"
+        @mouseup="onButtonUp"
         @touchend="onButtonUp"
       >
         {{ direction }}
@@ -24,14 +26,12 @@ export default defineComponent({
       directions: ["LEFT", "RIGHT", "UP", "DOWN"],
     };
   },
-  mounted() {},
   methods: {
     onButtonDown(direction: string) {
       const joystick = document.getElementById("joystick");
       if (!joystick) {
         return;
       }
-
       let axis = "X";
       let deg = 8;
       let isNeagtive = false;
