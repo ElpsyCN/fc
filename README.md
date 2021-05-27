@@ -31,7 +31,7 @@ pnpm dev
 | -------- | ---------------- |
 | 上下左右 | 方向键           |
 | START    | <kbd>Enter</kbd> |
-| SELECT   | <kbd>Tab</kbd>   |
+| SELECT   | <kbd>Space</kbd> |
 | A        | <kbd>A</kbd>     |
 | B        | <kbd>S</kbd>     |
 
