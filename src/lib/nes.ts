@@ -29,17 +29,16 @@ export function createNes(canvasId: string) {
   const framebuffer_u8 = new Uint8ClampedArray(buffer);
   const framebuffer_u32 = new Uint32Array(buffer);
 
-  const AUDIO_BUFFERING = 512;
-
   // Setup audio.
-  const audio_ctx = new window.AudioContext();
-  const script_processor = audio_ctx.createScriptProcessor(
+  const AUDIO_BUFFERING = 512;
+  const audioCtx = new window.AudioContext();
+  const script_processor = audioCtx.createScriptProcessor(
     AUDIO_BUFFERING,
     0,
     2
   );
   script_processor.onaudioprocess = audio_callback;
-  script_processor.connect(audio_ctx.destination);
+  script_processor.connect(audioCtx.destination);
 
   const SAMPLE_COUNT = 4 * 1024;
   const SAMPLE_MASK = SAMPLE_COUNT - 1;
