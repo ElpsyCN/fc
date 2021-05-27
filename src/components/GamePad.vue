@@ -3,7 +3,7 @@
     <div class="panel">
       <div class="controller-area">
         <controller-joystick />
-        <div class="joy">I</div>
+        <github-link />
         <sponsor-adsense />
       </div>
       <div class="function-area">
@@ -41,6 +41,7 @@ import ControllerAction from "./controller/ControllerAction.vue";
 import ControllerFunction from "./controller/ControllerFunction.vue";
 import ControllerJoystick from "./controller/ControllerJoystick.vue";
 import SponsorAdsense from "./SponsorAdsense.vue";
+import GithubLink from "./controller/GithubLink.vue";
 import { bindKeyboard } from "../lib/control";
 
 export default defineComponent({
@@ -50,6 +51,7 @@ export default defineComponent({
     ControllerFunction,
     ControllerJoystick,
     SponsorAdsense,
+    GithubLink,
   },
   mounted() {
     this.$nextTick(() => {
