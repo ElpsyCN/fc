@@ -41,6 +41,7 @@ import ControllerAction from "./controller/ControllerAction.vue";
 import ControllerFunction from "./controller/ControllerFunction.vue";
 import ControllerJoystick from "./controller/ControllerJoystick.vue";
 import SponsorAdsense from "./SponsorAdsense.vue";
+import { bindKeyboard } from "../lib/control";
 
 export default defineComponent({
   components: {
@@ -70,6 +71,8 @@ export default defineComponent({
       nesApp.bindButton("START");
       nesApp.bindButton("A");
       nesApp.bindButton("B");
+
+      bindKeyboard(nesApp.instance);
 
       document.querySelectorAll("button").forEach((el) => {
         el.addEventListener("contextmenu", (e) => {
