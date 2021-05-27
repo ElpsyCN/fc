@@ -1,0 +1,11 @@
+{
+  "name": "fc",
+  "version": "0.0.1",
+  "repository": "https://github.com/ElpsyCN/fc",
+  "scripts": {
+    "start": "live-server"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  }
+}
