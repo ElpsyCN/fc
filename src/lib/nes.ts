@@ -13,6 +13,8 @@ const REFILL_TARGET = 2048
 const MAX_FRAMES_PER_REFILL = 6
 // 目标帧率（jsnes 以 60fps 为基准产生音频样本）
 const FRAME_INTERVAL = 1000 / 60
+// 存档 localStorage key 前缀
+const SAVE_KEY_PREFIX = 'fc-save:'
 
 /** 手柄方向 / 功能按键名称（TURBO_A / TURBO_B 为小霸王经典连发键） */
 export type ButtonName = 'A' | 'B' | 'SELECT' | 'START' | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | 'TURBO_A' | 'TURBO_B'
@@ -44,6 +46,10 @@ export interface NesApp {
   setMuted: (muted: boolean) => void
   /** 重置当前游戏 */
   reset: () => void
+  /** 保存当前游戏状态到本地，返回是否成功 */
+  saveState: () => boolean
+  /** 从本地读取当前游戏存档，返回是否成功 */
+  loadState: () => boolean
 }
 
 /**
@@ -94,6 +100,8 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
   })
 
   let romLoaded = false
+  // 当前 ROM 路径（作为存档 key）
+  let currentRom = ''
   // 模拟器崩溃后停止驱动，避免反复抛错刷屏
   let stopped = false
   // worklet 不可用时退化为由动画帧驱动模拟器（无声）
@@ -209,6 +217,7 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
         return
       }
       const data = new Uint8Array(await res.arrayBuffer())
+      currentRom = url
       boot(data)
     },
 
@@ -222,6 +231,35 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
     reset() {
       if (romLoaded)
         nes.reloadROM()
+    },
+
+    saveState() {
+      if (!romLoaded || !currentRom)
+        return false
+      try {
+        localStorage.setItem(`${SAVE_KEY_PREFIX}${currentRom}`, JSON.stringify(nes.toJSON()))
+        return true
+      }
+      catch (error) {
+        console.error('存档失败', error)
+        return false
+      }
+    },
+
+    loadState() {
+      if (!currentRom)
+        return false
+      const raw = localStorage.getItem(`${SAVE_KEY_PREFIX}${currentRom}`)
+      if (!raw)
+        return false
+      try {
+        nes.fromJSON(JSON.parse(raw))
+        return true
+      }
+      catch (error) {
+        console.error('读档失败', error)
+        return false
+      }
     },
   }
 }
