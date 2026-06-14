@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useNes } from '../composables/useNes'
+import { useToast } from '../composables/useToast'
 
 const nesApp = useNes()
+const { showToast } = useToast()
 const muted = ref(false)
 const isFullscreen = ref(false)
 
@@ -20,18 +22,22 @@ function toggleFullscreen() {
 function toggleMute() {
   muted.value = !muted.value
   nesApp.value?.setMuted(muted.value)
+  showToast(muted.value ? '已静音' : '已开启声音')
 }
 
 function reset() {
   nesApp.value?.reset()
+  showToast('已重置游戏')
 }
 
 function saveState() {
-  nesApp.value?.saveState()
+  const ok = nesApp.value?.saveState()
+  showToast(ok ? '已存档' : '存档失败')
 }
 
 function loadState() {
-  nesApp.value?.loadState()
+  const ok = nesApp.value?.loadState()
+  showToast(ok ? '已读取存档' : '暂无存档，请先存档')
 }
 
 onMounted(() => document.addEventListener('fullscreenchange', syncFullscreen))
