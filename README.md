@@ -60,8 +60,10 @@ pnpm lint:fix
 - 像素字体（Press Start 2P）、跟随系统的暗色模式（`prefers-color-scheme`）
 - PC + 移动端响应式布局与触摸优化
 - 无障碍：键盘焦点可见、`aria-label` 标签、尊重 `prefers-reduced-motion`
+- **PWA**：可添加到主屏幕、离线可安装，缓存玩过的游戏离线重玩
 - 全部组件采用 Vue 3 `<script setup>`
 
 ## Todo
 
-- [ ] PWA 离线可安装
+- [ ] 手柄按键自定义
+- [ ] 更多游戏 ROM

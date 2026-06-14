@@ -41,6 +41,7 @@
     "unplugin-icons": "^23.0.1",
     "unplugin-vue-components": "^32.1.0",
     "vite": "^8.0.16",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.1.8"
   }
 }
