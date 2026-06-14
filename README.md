@@ -9,6 +9,8 @@
 
 ROM 基于 [JSNES](https://github.com/bfirsh/jsnes) 运行。
 
+![FC 红白机预览](./public/preview.png)
+
 ## 技术栈
 
 - Vue 3（`<script setup>` + 组合式 API）
@@ -48,18 +50,22 @@ pnpm lint:fix
 | A        | <kbd>A</kbd>     |
 | B        | <kbd>S</kbd>     |
 
+移动端可直接触摸手柄按键，并支持 TURBO 连发键。
+
 ## Features
 
-- 使用 Vue 3 + Vite + TypeScript 重构，组件全部采用 `<script setup>`
-- 复古增强：像素字体（Press Start 2P）、CRT 扫描线 + 屏幕辉光、像素级（`pixelated`）画面渲染
-- 支持跟随系统的暗色模式（`prefers-color-scheme`）
+- **拟真红白机外观**：黑色立体十字键、红色 A/B、橙色 TURBO 连发键、立体 SELECT/START、电源指示灯、机身螺丝、扬声器格栅
+- **CRT 屏幕**：扫描线、玻璃高光、像素级（`pixelated`）渲染、开机点亮动画
+- **AudioWorklet 音频**：在独立线程输出，避免占用主线程导致卡顿
+- **实用功能**：全屏、静音、重置游戏
+- 像素字体（Press Start 2P）、跟随系统的暗色模式（`prefers-color-scheme`）
+- PC + 移动端响应式布局与触摸优化
 - 无障碍：键盘焦点可见、`aria-label` 标签、尊重 `prefers-reduced-motion`
 - 键盘绑定基于 `KeyboardEvent.code`，兼容 qwerty / azerty / dvorak 布局
-- 点击按钮时的样式反馈与按钮名称
-- 使用新版的 [JSNES](https://jsnes.org/) 以 npm 模块方式打包
+- 全部组件采用 Vue 3 `<script setup>`
 
 ## Todo
 
-- [ ] 将音频从已废弃的 `ScriptProcessorNode` 迁移到 `AudioWorklet`
-- [ ] 支持手柄自定义按键 / 第二玩家
-- [ ] 游戏存档（save state）
+- [ ] 游戏存档 / 读档（save state）
+- [ ] 支持第二玩家手柄
+- [ ] PWA 离线可安装
