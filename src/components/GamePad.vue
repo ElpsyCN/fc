@@ -9,7 +9,9 @@ import ControllerFunction from './controller/ControllerFunction.vue'
 import ControllerJoystick from './controller/ControllerJoystick.vue'
 import GithubLink from './controller/GithubLink.vue'
 import GameControls from './GameControls.vue'
+import GameHelp from './GameHelp.vue'
 import GameMenu from './GameMenu.vue'
+import GameToast from './GameToast.vue'
 
 const DEFAULT_ROM = 'roms/Super Mario Bros. (JU) (PRG0) [!].nes'
 const BUTTONS: ButtonName[] = ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SELECT', 'START', 'A', 'B', 'TURBO_A', 'TURBO_B']
@@ -66,10 +68,12 @@ onBeforeUnmount(() => {
                 height="240"
                 aria-label="游戏画面"
               />
+              <GameToast />
             </div>
             <div class="emulator-bar">
               <GameMenu />
               <GameControls />
+              <GameHelp />
             </div>
           </div>
         </div>
