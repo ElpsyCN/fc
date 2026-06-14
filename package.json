@@ -24,7 +24,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@cloudbase/js-sdk": "^3.4.6",
     "@fontsource/press-start-2p": "^5.2.7",
+    "@yunlefun/sso": "^0.1.0",
     "jsnes": "^2.1.0",
     "vue": "^3.5.38",
     "vue-gtag": "^3.7.1"

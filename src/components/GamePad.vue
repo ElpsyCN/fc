@@ -2,12 +2,14 @@
 import type { ButtonName } from '../lib/nes'
 import { nextTick, onBeforeUnmount, onMounted } from 'vue'
 import { provideNes } from '../composables/useNes'
+import { useYlfAuth } from '../composables/useYlfAuth'
 import { bindKeyboard } from '../lib/control'
 import { createNes } from '../lib/nes'
 import ControllerAction from './controller/ControllerAction.vue'
 import ControllerFunction from './controller/ControllerFunction.vue'
 import ControllerJoystick from './controller/ControllerJoystick.vue'
 import GithubLink from './controller/GithubLink.vue'
+import GameAccount from './GameAccount.vue'
 import GameControls from './GameControls.vue'
 import GameHelp from './GameHelp.vue'
 import GameMenu from './GameMenu.vue'
@@ -17,6 +19,7 @@ const DEFAULT_ROM = 'roms/Super Mario Bros. (JU) (PRG0) [!].nes'
 const BUTTONS: ButtonName[] = ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SELECT', 'START', 'A', 'B', 'TURBO_A', 'TURBO_B']
 
 const nesApp = provideNes()
+const { initAuth } = useYlfAuth()
 const unbinders: Array<() => void> = []
 
 onMounted(async () => {
@@ -34,6 +37,9 @@ onMounted(async () => {
   BUTTONS.forEach(name => app.bindButton(name))
   // 玩家 1（方向键 + A/S）与玩家 2（IJKL + GHTY）键盘
   unbinders.push(bindKeyboard(app.instance, 1), bindKeyboard(app.instance, 2))
+
+  // 进站静默登录：延迟到游戏加载后再懒加载云乐坊 SDK，静默复用主站登录态
+  setTimeout(() => void initAuth(), 1500)
 })
 
 onBeforeUnmount(() => {
@@ -71,6 +77,7 @@ onBeforeUnmount(() => {
               <GameToast />
             </div>
             <div class="emulator-bar">
+              <GameAccount />
               <GameMenu />
               <GameControls />
               <GameHelp />

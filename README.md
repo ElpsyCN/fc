@@ -65,5 +65,6 @@ pnpm lint:fix
 
 ## Todo
 
+- [ ] 接入[云乐坊](https://yunle.fun)账号登录与存档云同步（会员，开发中）
 - [ ] 手柄按键自定义
 - [ ] 更多游戏 ROM
