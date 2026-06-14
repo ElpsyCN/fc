@@ -26,6 +26,14 @@ function reset() {
   nesApp.value?.reset()
 }
 
+function saveState() {
+  nesApp.value?.saveState()
+}
+
+function loadState() {
+  nesApp.value?.loadState()
+}
+
 onMounted(() => document.addEventListener('fullscreenchange', syncFullscreen))
 onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscreen))
 </script>
@@ -40,6 +48,12 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', syncFullscree
     >
       <i-mdi-volume-off v-if="muted" />
       <i-mdi-volume-high v-else />
+    </button>
+    <button type="button" aria-label="存档" @click="saveState">
+      <i-mdi-content-save />
+    </button>
+    <button type="button" aria-label="读档" @click="loadState">
+      <i-mdi-history />
     </button>
     <button type="button" aria-label="重置游戏" @click="reset">
       <i-mdi-restart />

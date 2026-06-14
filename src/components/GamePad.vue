@@ -15,7 +15,7 @@ const DEFAULT_ROM = 'roms/Super Mario Bros. (JU) (PRG0) [!].nes'
 const BUTTONS: ButtonName[] = ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SELECT', 'START', 'A', 'B', 'TURBO_A', 'TURBO_B']
 
 const nesApp = provideNes()
-let unbindKeyboard: (() => void) | undefined
+const unbinders: Array<() => void> = []
 
 onMounted(async () => {
   await nextTick()
@@ -30,11 +30,12 @@ onMounted(async () => {
     Object.assign(globalThis, { __nesApp: app })
   app.load(DEFAULT_ROM)
   BUTTONS.forEach(name => app.bindButton(name))
-  unbindKeyboard = bindKeyboard(app.instance)
+  // 玩家 1（方向键 + A/S）与玩家 2（IJKL + GHTY）键盘
+  unbinders.push(bindKeyboard(app.instance, 1), bindKeyboard(app.instance, 2))
 })
 
 onBeforeUnmount(() => {
-  unbindKeyboard?.()
+  unbinders.forEach(fn => fn())
 })
 </script>
 
