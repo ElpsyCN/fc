@@ -40,6 +40,10 @@ export interface NesApp {
   load: (url: string) => Promise<void>
   /** 直接以二进制数据启动 ROM */
   boot: (romData: Uint8Array) => void
+  /** 静音 / 取消静音 */
+  setMuted: (muted: boolean) => void
+  /** 重置当前游戏 */
+  reset: () => void
 }
 
 /**
@@ -95,6 +99,8 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
   // worklet 不可用时退化为由动画帧驱动模拟器（无声）
   let audioDriven = false
   let lastDrive = 0
+  // 输出增益节点（用于静音控制）
+  let gainNode: GainNode | undefined
 
   /** 安全地驱动一帧；返回是否成功产生了一帧 */
   function driveFrame(): boolean {
@@ -133,7 +139,10 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
     const audioNode = new AudioWorkletNode(audioCtx, 'nes-audio', {
       outputChannelCount: [2],
     })
-    audioNode.connect(audioCtx.destination)
+    // 经 GainNode 输出，便于静音控制
+    gainNode = audioCtx.createGain()
+    audioNode.connect(gainNode)
+    gainNode.connect(audioCtx.destination)
 
     audioNode.port.onmessage = (event: MessageEvent<{ type?: string }>) => {
       if (event.data?.type !== 'need')
@@ -204,5 +213,15 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
     },
 
     boot,
+
+    setMuted(muted) {
+      if (gainNode)
+        gainNode.gain.value = muted ? 0 : 1
+    },
+
+    reset() {
+      if (romLoaded)
+        nes.reloadROM()
+    },
   }
 }

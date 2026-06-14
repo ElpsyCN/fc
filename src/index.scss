@@ -197,6 +197,20 @@ a {
   color: var(--case-dark);
 }
 
+// 扬声器格栅（点阵喇叭孔）
+.speaker {
+  position: absolute;
+  left: 3px;
+  top: 124px;
+  width: 48px;
+  height: 26px;
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.35) 1.3px, transparent 1.7px);
+  background-size: 7px 7px;
+}
+
 .action-area {
   display: flex;
   flex-direction: row;
@@ -289,6 +303,14 @@ a {
   gap: 6px;
 }
 
+.emulator-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .screen-inner {
   position: relative;
   flex: 1;
@@ -340,6 +362,9 @@ canvas#nes-canvas {
 
 @media screen and (orientation: portrait) {
   /* 竖屏 */
+  .speaker {
+    display: none;
+  }
   .main {
     max-height: 100%;
   }

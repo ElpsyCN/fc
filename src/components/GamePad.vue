@@ -8,6 +8,7 @@ import ControllerAction from './controller/ControllerAction.vue'
 import ControllerFunction from './controller/ControllerFunction.vue'
 import ControllerJoystick from './controller/ControllerJoystick.vue'
 import GithubLink from './controller/GithubLink.vue'
+import GameControls from './GameControls.vue'
 import GameMenu from './GameMenu.vue'
 
 const DEFAULT_ROM = 'roms/Super Mario Bros. (JU) (PRG0) [!].nes'
@@ -52,6 +53,7 @@ onBeforeUnmount(() => {
           <span class="power-led" />
           <span class="power-text">POWER</span>
         </div>
+        <div class="speaker" aria-hidden="true" />
       </div>
       <div class="function-area">
         <div class="screen">
@@ -64,7 +66,10 @@ onBeforeUnmount(() => {
                 aria-label="游戏画面"
               />
             </div>
-            <GameMenu />
+            <div class="emulator-bar">
+              <GameMenu />
+              <GameControls />
+            </div>
           </div>
         </div>
         <ControllerFunction />
