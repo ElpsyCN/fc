@@ -186,6 +186,8 @@ a {
   box-shadow:
     0 0 6px 1px rgba(255, 40, 40, 0.85),
     inset 0 0 2px rgba(255, 255, 255, 0.7);
+  // 开机亮起
+  animation: power-on 1.4s ease-out;
 }
 
 .power-text {
@@ -259,6 +261,8 @@ a {
   display: flex;
   width: 100%;
   transition: 0.3s;
+  // 开机时 CRT 点亮
+  animation: screen-on 1s ease-out;
   background: #000;
   margin-bottom: 5px;
   border-radius: 10px;
@@ -395,6 +399,46 @@ canvas#nes-canvas {
 
 @media screen and (orientation: landscape) {
   /* 横屏 */
+}
+
+// 开机动画：电源灯亮起 + 屏幕 CRT 点亮
+@keyframes power-on {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.4;
+  }
+  35% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.6;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes screen-on {
+  0% {
+    filter: brightness(0);
+  }
+  30% {
+    filter: brightness(0.15);
+  }
+  50% {
+    filter: brightness(2.2) contrast(1.8);
+  }
+  70% {
+    filter: brightness(0.9);
+  }
+  100% {
+    filter: brightness(1);
+  }
 }
 
 // 尊重用户的“减少动态效果”偏好
