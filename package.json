@@ -2,6 +2,7 @@
   "name": "fc",
   "type": "module",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.13.1",
   "author": {
     "url": "https://www.yunyoujun.cn",
     "email": "me@yunyoujun.cn",
