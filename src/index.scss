@@ -1,11 +1,40 @@
+:root {
+  // 字体
+  --font-pixel: "Press Start 2P", "Courier New", monospace;
+  --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  // 机身配色（红白机识别度，亮暗模式一致）
+  --case-red: #da4a4a;
+  --case-dark: #474f51;
+  --panel: #f8f1d7;
+  --panel-highlight: #fffef7;
+  --btn: #857b7a;
+
+  // 环境背景（随亮 / 暗模式变化）
+  --bg-1: #d8ecfb;
+  --bg-2: #a8d4f0;
+  --focus-ring: #ffd76a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-1: #1a1a2e;
+    --bg-2: #0d0d16;
+  }
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
-  background: #d0e7f9;
+  // 移动端：禁止整页滚动与橡皮筋效果，避免操作手柄时页面位移
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: var(--font-base);
+  background: radial-gradient(ellipse at top, var(--bg-1), var(--bg-2));
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
@@ -13,6 +42,27 @@ body {
 
 button {
   cursor: pointer;
+  font-family: inherit;
+  // 移动端去除双击缩放与 300ms 点击延迟
+  touch-action: manipulation;
+}
+
+// 游戏手柄按键：禁用触摸手势，保证移动端可持续按压而不触发滚动 / 缩放
+.joystick-btn,
+.action button,
+.function button {
+  touch-action: none;
+}
+
+// 统一的键盘可见焦点样式
+button,
+select,
+a {
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 .main {
@@ -25,8 +75,15 @@ button {
   max-width: 812px;
   border-radius: 10px;
   margin: auto;
-  box-shadow: 0 0 0 5px #da4a4a, 0 0 0 20px #474f51;
-  background: #da4a4a;
+  // 红色塑料机身：外框 + 顶部高光 / 底部暗角 + 整机投影
+  box-shadow:
+    0 0 0 5px var(--case-red),
+    0 0 0 20px var(--case-dark),
+    0 0 0 21px rgba(0, 0, 0, 0.35),
+    inset 0 3px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.22),
+    0 18px 45px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(160deg, #e85d5d 0%, var(--case-red) 45%, #bd3a3a 100%);
   height: 100%;
   max-height: 414px;
   padding: 10px;
@@ -37,11 +94,61 @@ button {
   height: 100%;
   padding: 20px;
   box-sizing: border-box;
-  background: #f8f1d7;
+  background: linear-gradient(165deg, #fbf6e2 0%, var(--panel) 50%, #ece2c2 100%);
   border-radius: 15px;
   display: flex;
   flex-direction: row;
-  box-shadow: inset 8px 8px #fffef7;
+  box-shadow:
+    inset 8px 8px var(--panel-highlight),
+    inset -2px -3px 10px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+// 机身螺丝（四角，塑料外壳质感）
+.screw {
+  position: absolute;
+  z-index: 20;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 40% 35%, #e0d7b4, #b3a87e 58%, #8f8459);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.25);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 8px;
+    height: 2px;
+    border-radius: 1px;
+    background: rgba(0, 0, 0, 0.4);
+    transform: rotate(45deg);
+  }
+}
+
+.screw-tl {
+  top: 7px;
+  left: 7px;
+}
+
+.screw-tr {
+  top: 7px;
+  right: 7px;
+}
+
+.screw-bl {
+  bottom: 7px;
+  left: 7px;
+}
+
+.screw-br {
+  bottom: 7px;
+  right: 7px;
 }
 
 .function-area {
@@ -60,6 +167,34 @@ button {
   perspective: 400px;
 }
 
+// 电源指示灯（装饰，位于 GitHub 图标下方）
+.power-indicator {
+  position: absolute;
+  left: 0;
+  top: 96px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.power-led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #ff9a9a, #e01e1e 70%);
+  box-shadow:
+    0 0 6px 1px rgba(255, 40, 40, 0.85),
+    inset 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.power-text {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--case-dark);
+}
+
 .action-area {
   display: flex;
   flex-direction: row;
@@ -70,25 +205,25 @@ button {
   padding: 8px 15px;
   border-radius: 50px;
   align-self: center;
-  background: #da4a4a;
+  background: var(--case-red);
   box-shadow: 5px 5px 0 rgba(255, 255, 255, 0.8);
 }
 
 .sign {
   position: absolute;
-  font-weight: bold;
-  font-size: 20px;
-  font-style: italic;
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  line-height: 1.4;
   height: 50px;
   right: 0;
   top: 0;
-  background: #da4a4a;
-  color: #f8f1d7;
-  text-shadow: 0 -2px #fffef7;
-  padding: 0 0 15px 15px;
-  letter-spacing: 0.1em;
+  background: var(--case-red);
+  color: var(--panel);
+  text-shadow: 0 -2px var(--panel-highlight);
+  padding: 6px 0 15px 15px;
+  letter-spacing: 0.05em;
   border-bottom-left-radius: 15px;
-  filter: drop-shadow(0 8px #fffef7);
+  filter: drop-shadow(0 8px var(--panel-highlight));
 }
 
 .sign::before {
@@ -101,7 +236,7 @@ button {
   background: radial-gradient(
     circle at left bottom,
     transparent 14px,
-    #da4a4a 15px
+    var(--case-red) 15px
   );
 }
 
@@ -115,23 +250,8 @@ button {
   background: radial-gradient(
     circle at left bottom,
     transparent 14px,
-    #da4a4a 15px
+    var(--case-red) 15px
   );
-}
-
-.readme {
-  position: absolute;
-  left: 0;
-  top: 90px;
-  width: 90px;
-  height: 30px;
-  background: #857b7a;
-  border-radius: 5px;
-  text-align: center;
-  line-height: 30px;
-  color: #f8f1d7;
-  font-weight: bold;
-  font-size: 20px;
 }
 
 .screen {
@@ -145,28 +265,77 @@ button {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  // 黑色塑料边框 + 内陷阴影 + CRT 辉光
+  box-shadow:
+    inset 0 0 0 3px #0a0a0a,
+    inset 0 0 22px rgba(0, 0, 0, 0.65),
+    inset 0 0 16px rgba(120, 180, 255, 0.12),
+    0 0 0 2px rgba(0, 0, 0, 0.45),
+    0 3px 8px rgba(0, 0, 0, 0.4);
 }
 
-.screen canvas {
-  max-width: 100%;
-  max-height: 100%;
+// 模拟器画面容器：画面占据上方，选游戏下拉位于底部
+.emulator {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  gap: 6px;
 }
 
-.nes-roms {
-  margin: 0 auto;
-  text-align: center;
+.screen-inner {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  select {
-    width: 200px;
+  // 屏幕玻璃高光（左上反光）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.04) 22%,
+      transparent 45%
+    );
+  }
+
+  // CRT 扫描线 + 暗角
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.18) 0,
+      rgba(0, 0, 0, 0.18) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.55);
+    mix-blend-mode: multiply;
   }
 }
 
-.nes-controls {
-  margin-top: 2px;
+canvas#nes-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  // NES 是像素画面，放大时保持锐利而非模糊插值
+  image-rendering: pixelated;
 }
 
 @media screen and (orientation: portrait) {
-  /*竖屏 css*/
+  /* 竖屏 */
   .main {
     max-height: 100%;
   }
@@ -176,11 +345,12 @@ button {
     right: 0;
     top: 85px;
     bottom: 100px;
-    padding-bottom: 80px;
+    padding-bottom: 118px;
   }
   .function {
     position: absolute;
-    bottom: 0;
+    // 上移到屏幕与底部控制区之间，避免与连发键 / A·B 区重叠
+    bottom: 48px;
     align-self: flex-end;
     transform: translateX(20px);
     padding: 8px 10px;
@@ -197,7 +367,7 @@ button {
     background: radial-gradient(
       circle at left top,
       transparent 14px,
-      #da4a4a 15px
+      var(--case-red) 15px
     );
   }
   .function::after {
@@ -210,7 +380,7 @@ button {
     background: radial-gradient(
       circle at left bottom,
       transparent 14px,
-      #da4a4a 15px
+      var(--case-red) 15px
     );
   }
   .screen {
@@ -224,5 +394,16 @@ button {
 }
 
 @media screen and (orientation: landscape) {
-  /*横屏 css*/
+  /* 横屏 */
+}
+
+// 尊重用户的“减少动态效果”偏好
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
