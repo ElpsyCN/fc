@@ -1,15 +1,25 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import Icons, { ViteIconsResolver } from "vite-plugin-icons";
-import Components from "vite-plugin-components";
+/// <reference types="vitest/config" />
+import vue from '@vitejs/plugin-vue'
+import IconsResolver from 'unplugin-icons/resolver'
+import Icons from 'unplugin-icons/vite'
+import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite'
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
-    Icons(),
+    // 自动按需注册组件，并通过 IconsResolver 解析 `<i-mdi-xxx />` 形式的图标组件
     Components({
-      customComponentResolvers: ViteIconsResolver(),
+      resolvers: [IconsResolver()],
+      dts: 'src/components.d.ts',
     }),
+    // 将 `~icons/collection/name` 编译为 Vue 组件（数据源来自 @iconify/json）
+    Icons({ compiler: 'vue3' }),
   ],
-});
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.ts'],
+    clearMocks: true,
+  },
+})

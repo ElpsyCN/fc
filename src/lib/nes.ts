@@ -1,162 +1,208 @@
-import jsnes from "jsnes";
+import type { ButtonKey } from 'jsnes'
+import { Controller, NES } from 'jsnes'
 
-// 屏幕宽度
-const SCREEN_WIDTH = 256;
-// 屏幕高度
-const SCREEN_HEIGHT = 240;
-const FRAMEBUFFER_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
+// 屏幕宽高（NES 标准分辨率）
+const SCREEN_WIDTH = 256
+const SCREEN_HEIGHT = 240
+const FRAMEBUFFER_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT
+
+// 每次收到 worklet 请求时补充的样本目标。刻意取较小值（约 2~3 帧），
+// 避免单次同步跑过多帧形成主线程长任务（移动端会表现为页面卡顿 / 无响应）。
+const REFILL_TARGET = 2048
+// 单次补充最多驱动的帧数上限，作为兜底防止 frame() 不产样本时陷入死循环
+const MAX_FRAMES_PER_REFILL = 6
+// 目标帧率（jsnes 以 60fps 为基准产生音频样本）
+const FRAME_INTERVAL = 1000 / 60
+
+/** 手柄方向 / 功能按键名称（TURBO_A / TURBO_B 为小霸王经典连发键） */
+export type ButtonName = 'A' | 'B' | 'SELECT' | 'START' | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | 'TURBO_A' | 'TURBO_B'
+
+/** 按键名称到 jsnes 按键编码的映射 */
+const BUTTON_CODE: Record<ButtonName, ButtonKey> = {
+  A: Controller.BUTTON_A,
+  B: Controller.BUTTON_B,
+  SELECT: Controller.BUTTON_SELECT,
+  START: Controller.BUTTON_START,
+  UP: Controller.BUTTON_UP,
+  DOWN: Controller.BUTTON_DOWN,
+  LEFT: Controller.BUTTON_LEFT,
+  RIGHT: Controller.BUTTON_RIGHT,
+  TURBO_A: Controller.BUTTON_TURBO_A,
+  TURBO_B: Controller.BUTTON_TURBO_B,
+}
+
+export interface NesApp {
+  /** jsnes 实例 */
+  instance: NES
+  /** 将页面上 `[data-button="NAME"]` 元素与手柄按键绑定 */
+  bindButton: (name: ButtonName) => void
+  /** 通过 URL 加载并启动 ROM */
+  load: (url: string) => Promise<void>
+  /** 直接以二进制数据启动 ROM */
+  boot: (romData: Uint8Array) => void
+}
 
 /**
- * 创建 JSNES 实例
- * @param canvasId 画布 ID
- * @returns
+ * 创建 JSNES 实例并接管指定 canvas 的渲染与音频。
+ *
+ * 音频通过 AudioWorklet 在独立的音频线程输出（替代已废弃的 ScriptProcessorNode）：
+ * worklet 维护环形缓冲并在余量不足时反压请求，主线程按需驱动 `nes.frame()`
+ * 产生少量样本并零拷贝回传（pull 模型，兼容无 SharedArrayBuffer 的部署环境）。
+ *
+ * @param canvasId 画布元素 id
+ * @returns NES 应用句柄；当画布不存在时返回 `undefined`
  */
-export function createNes(canvasId: string) {
-  // init
-  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-  const ctx = canvas.getContext("2d");
+export async function createNes(canvasId: string): Promise<NesApp | undefined> {
+  const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null
+  const ctx = canvas?.getContext('2d')
   if (!ctx) {
-    console.log("画布不存在");
-    return;
+    console.error('画布不存在')
+    return
   }
-  const imageData = ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+  const imageData = ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-  // Allocate framebuffer array.
-  const buffer = new ArrayBuffer(imageData.data.length);
-  const framebuffer_u8 = new Uint8ClampedArray(buffer);
-  const framebuffer_u32 = new Uint32Array(buffer);
+  // 帧缓冲：u8 视图写回 canvas，u32 视图供 jsnes 按像素填充（共享同一 buffer）
+  const buffer = new ArrayBuffer(imageData.data.length)
+  const framebufferU8 = new Uint8ClampedArray(buffer)
+  const framebufferU32 = new Uint32Array(buffer)
 
-  // Setup audio.
-  const AUDIO_BUFFERING = 512;
-  const audioCtx = new window.AudioContext();
-  const script_processor = audioCtx.createScriptProcessor(
-    AUDIO_BUFFERING,
-    0,
-    2
-  );
-  script_processor.onaudioprocess = audio_callback;
-  script_processor.connect(audioCtx.destination);
+  // ===== 音频 =====
+  const audioCtx = new AudioContext()
 
-  const SAMPLE_COUNT = 4 * 1024;
-  const SAMPLE_MASK = SAMPLE_COUNT - 1;
-  const audio_samples_L = new Float32Array(SAMPLE_COUNT);
-  const audio_samples_R = new Float32Array(SAMPLE_COUNT);
+  // 主线程攒批缓冲：jsnes 通过 onAudioSample 持续产生样本
+  const pendingLeft: number[] = []
+  const pendingRight: number[] = []
 
-  let audio_write_cursor = 0;
-  let audio_read_cursor = 0;
-
-  const nes = new jsnes.NES({
-    onFrame(framebuffer_24: Uint32Array) {
+  const nes = new NES({
+    // 让 jsnes 采样率与音频输出上下文一致，避免音高 / 速度偏差
+    sampleRate: audioCtx.sampleRate,
+    onFrame(frameBuffer) {
       for (let i = 0; i < FRAMEBUFFER_SIZE; i++)
-        framebuffer_u32[i] = 0xff000000 | framebuffer_24[i];
+        framebufferU32[i] = 0xFF000000 | frameBuffer[i]
     },
-    onAudioSample(l: any, r: any) {
-      audio_samples_L[audio_write_cursor] = l;
-      audio_samples_R[audio_write_cursor] = r;
-      audio_write_cursor = (audio_write_cursor + 1) & SAMPLE_MASK;
+    onAudioSample(left, right) {
+      pendingLeft.push(left)
+      pendingRight.push(right)
     },
-  });
+  })
 
-  function onAnimationFrame() {
-    if (!ctx) {
-      return;
+  let romLoaded = false
+  // 模拟器崩溃后停止驱动，避免反复抛错刷屏
+  let stopped = false
+  // worklet 不可用时退化为由动画帧驱动模拟器（无声）
+  let audioDriven = false
+  let lastDrive = 0
+
+  /** 安全地驱动一帧；返回是否成功产生了一帧 */
+  function driveFrame(): boolean {
+    if (!romLoaded || stopped)
+      return false
+    try {
+      nes.frame()
+      return true
     }
-
-    window.requestAnimationFrame(onAnimationFrame);
-
-    imageData.data.set(framebuffer_u8);
-    ctx.putImageData(imageData, 0, 0);
+    catch (error) {
+      stopped = true
+      console.error('模拟器运行出错', error)
+      return false
+    }
   }
 
-  function audio_remain() {
-    return (audio_write_cursor - audio_read_cursor) & SAMPLE_MASK;
+  function onAnimationFrame(now: number) {
+    window.requestAnimationFrame(onAnimationFrame)
+    // 无音频驱动时退化为由动画帧驱动模拟器，并节流到 ~60fps（兼容高刷新率屏幕）
+    if (!audioDriven && now - lastDrive >= FRAME_INTERVAL - 1) {
+      lastDrive = now
+      driveFrame()
+      pendingLeft.length = 0
+      pendingRight.length = 0
+    }
+    imageData.data.set(framebufferU8)
+    ctx.putImageData(imageData, 0, 0)
   }
 
-  function audio_callback(event: any) {
-    const dst = event.outputBuffer;
-    const len = dst.length;
+  // 尝试启用 AudioWorklet 音频管线
+  try {
+    // worklet 为 public/ 下的自包含纯 JS（见该文件注释），用 BASE_URL 适配部署子路径
+    await audioCtx.audioWorklet.addModule(
+      `${import.meta.env.BASE_URL}nes-audio.worklet.js`,
+    )
+    const audioNode = new AudioWorkletNode(audioCtx, 'nes-audio', {
+      outputChannelCount: [2],
+    })
+    audioNode.connect(audioCtx.destination)
 
-    // Attempt to avoid buffer underruns.
-    if (audio_remain() < AUDIO_BUFFERING) nes.frame();
-
-    let dst_l = dst.getChannelData(0);
-    let dst_r = dst.getChannelData(1);
-    for (let i = 0; i < len; i++) {
-      const src_idx = (audio_read_cursor + i) & SAMPLE_MASK;
-      dst_l[i] = audio_samples_L[src_idx];
-      dst_r[i] = audio_samples_R[src_idx];
+    audioNode.port.onmessage = (event: MessageEvent<{ type?: string }>) => {
+      if (event.data?.type !== 'need')
+        return
+      // 小批量按需驱动；帧数上限兜底，避免 ROM 未就绪 / 崩溃时死循环卡死主线程
+      let frames = 0
+      while (pendingLeft.length < REFILL_TARGET && frames < MAX_FRAMES_PER_REFILL) {
+        if (!driveFrame())
+          break
+        frames++
+      }
+      const left = Float32Array.from(pendingLeft)
+      const right = Float32Array.from(pendingRight)
+      pendingLeft.length = 0
+      pendingRight.length = 0
+      audioNode.port.postMessage({ left, right }, [left.buffer, right.buffer])
     }
 
-    audio_read_cursor = (audio_read_cursor + len) & SAMPLE_MASK;
+    audioDriven = true
+  }
+  catch (error) {
+    console.error('AudioWorklet 初始化失败，降级为无声模式', error)
+  }
+
+  // 浏览器在用户首次交互前会挂起 AudioContext，需在交互时恢复。
+  // 持续监听（而非 once）以保证即使首次 resume 因缺少用户激活而失败，
+  // 后续任意交互仍可恢复音频与游戏运行。
+  const resume = () => {
+    if (audioCtx.state === 'suspended')
+      void audioCtx.resume()
+  }
+  for (const type of ['pointerdown', 'keydown', 'touchstart'] as const)
+    window.addEventListener(type, resume)
+
+  function boot(romData: Uint8Array) {
+    nes.loadROM(romData)
+    romLoaded = true
+    stopped = false
+    window.requestAnimationFrame(onAnimationFrame)
   }
 
   return {
-    /**
-     * 实例
-     */
     instance: nes,
 
-    /**
-     * 绑定按钮
-     * @param button
-     * @returns
-     */
-    bindButton(name: string) {
-      const buttonName = "BUTTON_" + name;
-      const btn = document.querySelector(
-        `[role="${buttonName}"]`
-      ) as HTMLElement;
-      if (!btn) {
-        return;
+    bindButton(name) {
+      const btn = document.querySelector<HTMLElement>(`[data-button="${name}"]`)
+      if (!btn)
+        return
+      const code = BUTTON_CODE[name]
+      const onDown = () => nes.buttonDown(1, code)
+      const onUp = () => nes.buttonUp(1, code)
+      btn.addEventListener('touchstart', onDown, { passive: true })
+      btn.addEventListener('mousedown', onDown)
+      btn.addEventListener('touchend', onUp)
+      btn.addEventListener('mouseup', onUp)
+      // 指针移出按钮时也视为抬起，避免“按住”卡死
+      btn.addEventListener('mouseleave', onUp)
+    },
+
+    async load(url) {
+      const res = await fetch(url)
+      if (!res.ok) {
+        console.error(`加载 ROM 失败 ${url}: ${res.status} ${res.statusText}`)
+        return
       }
-
-      const onButtonDown = () => {
-        nes.buttonDown(1, jsnes.Controller[buttonName]);
-      };
-
-      const onButtonUp = () => {
-        nes.buttonUp(1, jsnes.Controller[buttonName]);
-      };
-
-      btn.ontouchstart = onButtonDown;
-      btn.onmousedown = onButtonDown;
-      btn.ontouchend = onButtonUp;
-      btn.onmouseup = onButtonUp;
+      const data = new Uint8Array(await res.arrayBuffer())
+      boot(data)
     },
 
-    /**
-     * 加载 ROM
-     * @param url 路径
-     */
-    async load(url: string) {
-      const req = new XMLHttpRequest();
-      req.open("GET", url);
-      req.overrideMimeType("text/plain; charset=x-user-defined");
-      req.onload = () => {
-        if (req.status === 200) {
-          // console.log(this.responseText);
-          // nes_boot();
-          this.boot(req.responseText);
-        } else if (req.status === 0) {
-          // Aborted, so ignore error
-        } else {
-          console.log(`Error loading ${url}: ${req.statusText}`);
-        }
-      };
-      req.send();
-      return req.responseText;
-    },
-
-    /**
-     * 启动 ROM
-     * @param rom_data
-     */
-    boot(rom_data: string) {
-      nes.loadROM(rom_data);
-      window.requestAnimationFrame(onAnimationFrame);
-    },
-  };
+    boot,
+  }
 }

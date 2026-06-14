@@ -1,87 +1,81 @@
+<script setup lang="ts">
+import type { ButtonName } from '../lib/nes'
+import { nextTick, onBeforeUnmount, onMounted } from 'vue'
+import { provideNes } from '../composables/useNes'
+import { bindKeyboard } from '../lib/control'
+import { createNes } from '../lib/nes'
+import ControllerAction from './controller/ControllerAction.vue'
+import ControllerFunction from './controller/ControllerFunction.vue'
+import ControllerJoystick from './controller/ControllerJoystick.vue'
+import GithubLink from './controller/GithubLink.vue'
+import GameMenu from './GameMenu.vue'
+
+const DEFAULT_ROM = 'roms/Super Mario Bros. (JU) (PRG0) [!].nes'
+const BUTTONS: ButtonName[] = ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SELECT', 'START', 'A', 'B', 'TURBO_A', 'TURBO_B']
+
+const nesApp = provideNes()
+let unbindKeyboard: (() => void) | undefined
+
+onMounted(async () => {
+  await nextTick()
+  const app = await createNes('nes-canvas')
+  if (!app) {
+    console.error('NES 初始化失败！')
+    return
+  }
+  nesApp.value = app
+  // 开发环境下暴露实例，便于调试与自动化验证
+  if (import.meta.env.DEV)
+    Object.assign(globalThis, { __nesApp: app })
+  app.load(DEFAULT_ROM)
+  BUTTONS.forEach(name => app.bindButton(name))
+  unbindKeyboard = bindKeyboard(app.instance)
+})
+
+onBeforeUnmount(() => {
+  unbindKeyboard?.()
+})
+</script>
+
 <template>
-  <div class="main">
+  <!-- 阻止整机区域的右键菜单 / 长按选中，贴近真实手柄操作 -->
+  <div class="main" @contextmenu.prevent>
     <div class="panel">
+      <span class="screw screw-tl" aria-hidden="true" />
+      <span class="screw screw-tr" aria-hidden="true" />
+      <span class="screw screw-bl" aria-hidden="true" />
+      <span class="screw screw-br" aria-hidden="true" />
       <div class="controller-area">
-        <controller-joystick />
-        <github-link />
-        <sponsor-adsense />
+        <ControllerJoystick />
+        <GithubLink />
+        <div class="power-indicator" aria-hidden="true">
+          <span class="power-led" />
+          <span class="power-text">POWER</span>
+        </div>
       </div>
       <div class="function-area">
         <div class="screen">
-          <div id="emulator" style="width: 100%; height: 100%">
-            <div style="margin: auto; width: 75%; height: 90%">
+          <div id="emulator" class="emulator">
+            <div class="screen-inner">
               <canvas
                 id="nes-canvas"
                 width="256"
                 height="240"
-                style="width: 100%"
+                aria-label="游戏画面"
               />
             </div>
-            <game-menu />
+            <GameMenu />
           </div>
         </div>
-        <controller-function />
+        <ControllerFunction />
       </div>
       <div class="action-area">
-        <controller-action />
+        <ControllerAction />
       </div>
       <div class="sign">
-        FAMILY <br />
+        FAMILY <br>
         COMPUTER
       </div>
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent } from "vue";
-import GameMenu from "./GameMenu.vue";
-import { createNes } from "../lib/nes";
-import ControllerAction from "./controller/ControllerAction.vue";
-import ControllerFunction from "./controller/ControllerFunction.vue";
-import ControllerJoystick from "./controller/ControllerJoystick.vue";
-import SponsorAdsense from "./SponsorAdsense.vue";
-import GithubLink from "./controller/GithubLink.vue";
-import { bindKeyboard } from "../lib/control";
-
-export default defineComponent({
-  components: {
-    GameMenu,
-    ControllerAction,
-    ControllerFunction,
-    ControllerJoystick,
-    SponsorAdsense,
-    GithubLink,
-  },
-  mounted() {
-    this.$nextTick(() => {
-      const defaultRom = "roms/Super Mario Bros. (JU) (PRG0) [!].nes";
-      const nesApp = createNes("nes-canvas");
-      // @ts-ignore
-      window.nesApp = nesApp;
-      if (!nesApp) {
-        console.log("NES 初始化失败！");
-        return;
-      }
-      nesApp.load(defaultRom);
-
-      nesApp.bindButton("LEFT");
-      nesApp.bindButton("RIGHT");
-      nesApp.bindButton("UP");
-      nesApp.bindButton("DOWN");
-      nesApp.bindButton("SELECT");
-      nesApp.bindButton("START");
-      nesApp.bindButton("A");
-      nesApp.bindButton("B");
-
-      bindKeyboard(nesApp.instance);
-
-      document.querySelectorAll("button").forEach((el) => {
-        el.addEventListener("contextmenu", (e) => {
-          e.preventDefault();
-        });
-      });
-    });
-  },
-});
-</script>

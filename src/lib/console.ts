@@ -1,4 +1,4 @@
-import pkg from "../../package.json";
+import pkg from '../../package.json'
 
 /**
  * 控制台输出信息
@@ -11,19 +11,21 @@ function consoleInfo(
   name: string,
   link: string,
   color?: string,
-  emoji?: string
+  emoji?: string,
 ) {
   if (!color) {
-    color = "#0078E7";
+    color = '#0078E7'
   }
+  // 控制台彩色 banner 是该函数的预期用途
+  // eslint-disable-next-line no-console
   console.log(
-    `%c ${emoji || "☁️"} ${name} %c ${link}`,
+    `%c ${emoji || '☁️'} ${name} %c ${link}`,
     `color: white; background: ${color}; padding:5px 0;`,
-    `padding:4px;border:1px solid ${color};`
-  );
+    `padding:4px;border:1px solid ${color};`,
+  )
 }
 
 export function consoleAllInfo() {
-  consoleInfo("fc", pkg.repository.url, "#DA4A4A", "🎮");
-  consoleInfo("@" + pkg.author.name, pkg.repository.url);
+  consoleInfo('fc', pkg.repository.url, '#DA4A4A', '🎮')
+  consoleInfo(`@${pkg.author.name}`, pkg.repository.url)
 }
