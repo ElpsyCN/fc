@@ -15,9 +15,15 @@ declare module 'vue' {
     ControllerFunction: typeof import('./components/controller/ControllerFunction.vue')['default']
     ControllerJoystick: typeof import('./components/controller/ControllerJoystick.vue')['default']
     GameBgm: typeof import('./components/GameBgm.vue')['default']
+    GameControls: typeof import('./components/GameControls.vue')['default']
     GameMenu: typeof import('./components/GameMenu.vue')['default']
     GamePad: typeof import('./components/GamePad.vue')['default']
     GithubLink: typeof import('./components/controller/GithubLink.vue')['default']
+    IMdiFullscreen: typeof import('~icons/mdi/fullscreen')['default']
+    IMdiFullscreenExit: typeof import('~icons/mdi/fullscreen-exit')['default']
     IMdiGithub: typeof import('~icons/mdi/github')['default']
+    IMdiRestart: typeof import('~icons/mdi/restart')['default']
+    IMdiVolumeHigh: typeof import('~icons/mdi/volume-high')['default']
+    IMdiVolumeOff: typeof import('~icons/mdi/volume-off')['default']
   }
 }
