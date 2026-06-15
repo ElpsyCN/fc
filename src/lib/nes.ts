@@ -50,6 +50,8 @@ export interface NesApp {
   saveState: () => boolean
   /** 从本地读取当前游戏存档，返回是否成功 */
   loadState: () => boolean
+  /** 当前 ROM 路径（云存档区分游戏用） */
+  getRom: () => string
 }
 
 /**
@@ -261,5 +263,7 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
         return false
       }
     },
+
+    getRom: () => currentRom,
   }
 }

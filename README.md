@@ -61,10 +61,23 @@ pnpm lint:fix
 - PC + 移动端响应式布局与触摸优化
 - 无障碍：键盘焦点可见、`aria-label` 标签、尊重 `prefers-reduced-motion`
 - **PWA**：可添加到主屏幕、离线可安装，缓存玩过的游戏离线重玩
+- **云乐坊账号**：接入 [`@yunlefun/sso`](https://www.npmjs.com/package/@yunlefun/sso) 跨站登录，会员可云端同步游戏存档（跨设备）
 - 全部组件采用 Vue 3 `<script setup>`
+
+## 云乐坊账号接入
+
+登录基于 [`@yunlefun/sso`](https://www.npmjs.com/package/@yunlefun/sso) + CloudBase Auth（重型 SDK 已动态 import 代码分割，不影响首屏）。可用环境变量覆盖默认：
+
+| 环境变量 | 说明 | 默认 |
+| --- | --- | --- |
+| `VITE_CLOUDBASE_ENV` | CloudBase 环境 ID | `yunlefun-8g7ybcxc7345c490` |
+| `VITE_CLOUDBASE_KEY` | publishable key（可选） | 空 |
+| `VITE_YLF_MEMBER_COLLECTION` | 会员集合名 | `ylf_members` |
+| `VITE_FC_MAX_SAVES` | 云存档总数上限 | `20` |
+
+> 接入须知：① 站点 origin 需在云乐坊后台加入 SSO 白名单；② 云存档需 CloudBase `fc_saves` 集合并配置「仅创建者可读写」权限；③ 会员状态读自会员集合（字段任一为真即视为会员：`isMember` / `isVip` / `vip` / `level > 0`）。
 
 ## Todo
 
-- [ ] 接入[云乐坊](https://yunle.fun)账号登录与存档云同步（会员，开发中）
 - [ ] 手柄按键自定义
 - [ ] 更多游戏 ROM
