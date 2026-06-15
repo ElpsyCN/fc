@@ -72,10 +72,10 @@ pnpm lint:fix
 | --- | --- | --- |
 | `VITE_CLOUDBASE_ENV` | CloudBase 环境 ID | `yunlefun-8g7ybcxc7345c490` |
 | `VITE_CLOUDBASE_KEY` | publishable key（可选） | 空 |
-| `VITE_YLF_MEMBER_COLLECTION` | 会员集合名 | `ylf_members` |
+| `VITE_YLF_MEMBER_COLLECTION` | 会员集合名 | `user_memberships` |
 | `VITE_FC_MAX_SAVES` | 云存档总数上限 | `20` |
 
-> 接入须知：① 站点 origin 需在云乐坊后台加入 SSO 白名单；② 云存档需 CloudBase `fc_saves` 集合并配置「仅创建者可读写」权限；③ 会员状态读自会员集合（字段任一为真即视为会员：`isMember` / `isVip` / `vip` / `level > 0`）。
+> 接入须知：① 站点 origin 需在云乐坊后台加入 SSO 白名单；② 云存档需 CloudBase `fc_saves` 集合并配置「仅创建者可读写」权限；③ 会员状态直接复用 `www.yunle.fun` 的 `user_memberships` 会员体系（按 `userId` 查询，`expireAt` 晚于当前即为有效会员），无需额外维护。
 
 ## Todo
 

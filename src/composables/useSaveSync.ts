@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 import { useYlfAuth } from './useYlfAuth'
 
-/** 会员集合名（云乐坊会员数据所在 CloudBase 集合，可用 env 覆盖；字段约定见下方 MemberDoc） */
-const MEMBER_COLLECTION = import.meta.env.VITE_YLF_MEMBER_COLLECTION ?? 'ylf_members'
+/** 会员集合名（复用云乐坊 www.yunle.fun 的 user_memberships 体系，可用 env 覆盖） */
+const MEMBER_COLLECTION = import.meta.env.VITE_YLF_MEMBER_COLLECTION ?? 'user_memberships'
 /** 云存档集合名 */
 const SAVE_COLLECTION = 'fc_saves'
 /** 云存档总数上限（所有游戏合计；可用 env 覆盖） */
@@ -17,12 +17,10 @@ export interface CloudSave {
   updatedAt: number
 }
 
-/** 会员文档约定字段（任一为真即视为会员，便于兼容不同后端命名） */
-interface MemberDoc {
-  isMember?: boolean
-  isVip?: boolean
-  vip?: boolean
-  level?: number
+/** 会员记录（对齐云乐坊 user_memberships 集合：expireAt 晚于当前即为有效会员） */
+interface MembershipRecord {
+  userId: string
+  expireAt: number
 }
 
 const isMember = ref(false)
@@ -48,13 +46,14 @@ export function useSaveSync() {
     }
     try {
       const db = await getDb()
-      // 按 uid 查会员集合（集合若配「仅创建者可读」也会自动按 _openid 过滤）
+      // 复用 www.yunle.fun 的 user_memberships：按 userId 查当前用户的会员记录
       const { data } = await db.collection(MEMBER_COLLECTION)
-        .where({ uid: user.value.uid })
+        .where({ userId: user.value.uid })
         .limit(1)
         .get()
-      const doc = (data?.[0] ?? {}) as MemberDoc
-      isMember.value = Boolean(doc.isMember || doc.isVip || doc.vip || (doc.level ?? 0) > 0)
+      const record = (data?.[0] ?? null) as MembershipRecord | null
+      // 与 www.yunle.fun 一致：到期时间晚于当前即为有效会员
+      isMember.value = !!record && record.expireAt > Date.now()
     }
     catch (error) {
       console.error('查询云乐坊会员状态失败', error)
