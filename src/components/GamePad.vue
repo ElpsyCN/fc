@@ -10,6 +10,7 @@ import ControllerFunction from './controller/ControllerFunction.vue'
 import ControllerJoystick from './controller/ControllerJoystick.vue'
 import GithubLink from './controller/GithubLink.vue'
 import GameAccount from './GameAccount.vue'
+import GameCloud from './GameCloud.vue'
 import GameControls from './GameControls.vue'
 import GameHelp from './GameHelp.vue'
 import GameMenu from './GameMenu.vue'
@@ -78,6 +79,7 @@ onBeforeUnmount(() => {
             </div>
             <div class="emulator-bar">
               <GameAccount />
+              <GameCloud />
               <GameMenu />
               <GameControls />
               <GameHelp />
