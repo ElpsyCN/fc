@@ -3,6 +3,9 @@
 yarn.lock
 package-lock.json
 
+# Local agent / tooling config（本地 Codex 配置，勿提交、勿 lint）
+.codex/
+
 # Build
 dist
 dist-ssr
