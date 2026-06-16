@@ -69,7 +69,10 @@ async function syncSession(): Promise<void> {
 async function initAuth(): Promise<void> {
   try {
     const { signInWithSso } = await import('@yunlefun/sso')
-    await signInWithSso(await ensureAuth(), { mode: 'silent' })
+    const res = await signInWithSso(await ensureAuth(), { mode: 'silent' })
+    // 'not_authenticated' 是「主站未登录」的正常结果；其余（如 invalid_request 未加白名单）值得记录便于排查
+    if (!res.ok && res.reason !== 'not_authenticated')
+      console.warn('[ylf-auth] 静默登录未建立会话：', res.reason)
   }
   catch (error) {
     console.error('云乐坊静默登录失败', error)
@@ -85,6 +88,8 @@ async function login(): Promise<{ ok: boolean, reason?: string }> {
     const { signInWithSso } = await import('@yunlefun/sso')
     const res = await signInWithSso(await ensureAuth(), { mode: 'interactive' })
     await syncSession()
+    if (!res.ok)
+      console.warn('[ylf-auth] SSO 登录失败：', res.reason)
     return res.ok ? { ok: true } : { ok: false, reason: res.reason }
   }
   catch (error) {
