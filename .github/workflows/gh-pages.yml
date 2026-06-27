@@ -1,10 +1,12 @@
 name: GitHub Pages
 
+# 仅在 CI（lint / typecheck / test）成功后才构建部署，避免坏代码上线
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
 
@@ -12,8 +14,10 @@ permissions:
   contents: write
 
 jobs:
-  ci:
+  deploy:
     runs-on: ubuntu-latest
+    # 仅当触发的 CI 是 push 到 main 且结论为成功时部署（排除 PR 的 CI 完成）
+    if: ${{ github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -29,18 +33,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Test
-        run: pnpm test
-
       - name: Build
         run: pnpm build
 
       - name: Deploy
-        # 仅在推送到 main 时部署，PR 只跑检查
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
