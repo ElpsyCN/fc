@@ -26,7 +26,7 @@ interface CbSessionUser {
 
 // 仅用于类型推断，不打进首屏 bundle（实际值由动态 import 懒加载）
 type CloudbaseModule = typeof import('@cloudbase/js-sdk')
-export type CloudbaseApp = ReturnType<CloudbaseModule['default']['init']>
+export type CloudbaseApp = ReturnType<CloudbaseModule['init']>
 type CloudbaseAuth = ReturnType<CloudbaseApp['auth']>
 
 let app: CloudbaseApp | undefined

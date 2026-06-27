@@ -137,7 +137,8 @@ export async function createNes(canvasId: string): Promise<NesApp | undefined> {
       pendingRight.length = 0
     }
     imageData.data.set(framebufferU8)
-    ctx.putImageData(imageData, 0, 0)
+    // 上方守卫已保证 ctx 非空；闭包内 TS 不保留收窄，故断言
+    ctx!.putImageData(imageData, 0, 0)
   }
 
   // 尝试启用 AudioWorklet 音频管线
