@@ -4,6 +4,7 @@ import { nextTick, onBeforeUnmount, onMounted } from 'vue'
 import { provideNes } from '../composables/useNes'
 import { useYlfAuth } from '../composables/useYlfAuth'
 import { bindKeyboard } from '../lib/control'
+import { scheduleIdleTask } from '../lib/idle'
 import { createNes } from '../lib/nes'
 import ControllerAction from './controller/ControllerAction.vue'
 import ControllerFunction from './controller/ControllerFunction.vue'
@@ -22,6 +23,7 @@ const BUTTONS: ButtonName[] = ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SELECT', 'START',
 const nesApp = provideNes()
 const { initAuth } = useYlfAuth()
 const unbinders: Array<() => void> = []
+let cancelAuthInitialization: (() => void) | undefined
 
 onMounted(async () => {
   await nextTick()
@@ -39,11 +41,12 @@ onMounted(async () => {
   // 玩家 1（方向键 + A/S）与玩家 2（IJKL + GHTY）键盘
   unbinders.push(bindKeyboard(app.instance, 1), bindKeyboard(app.instance, 2))
 
-  // 进站静默登录：延迟到游戏加载后再懒加载云乐坊 SDK，静默复用主站登录态
-  setTimeout(() => void initAuth(), 1500)
+  // 游戏启动后再利用浏览器空闲时间初始化登录，避免与首屏渲染和模拟器启动争抢主线程
+  cancelAuthInitialization = scheduleIdleTask(() => void initAuth())
 })
 
 onBeforeUnmount(() => {
+  cancelAuthInitialization?.()
   unbinders.forEach(fn => fn())
 })
 </script>

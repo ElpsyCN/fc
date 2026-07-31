@@ -77,6 +77,14 @@ pnpm lint:fix
 
 > 接入须知：① 站点 origin 需在云乐坊后台加入 SSO 白名单；② 云存档需 CloudBase `fc_saves` 集合并配置「仅创建者可读写」权限；③ 会员状态直接复用 `www.yunle.fun` 的 `user_memberships` 会员体系（按 `userId` 查询，`expireAt` 晚于当前即为有效会员），无需额外维护。
 
+## PWA 开关
+
+PWA 默认开启。如需关闭，在构建环境中设置 `VITE_PWA_ENABLED=false`。关闭构建仍会发布一个自注销 Service Worker，用于解除旧版本的控制并清理已有缓存：
+
+```bash
+VITE_PWA_ENABLED=false pnpm build
+```
+
 ## Todo
 
 - [ ] 手柄按键自定义

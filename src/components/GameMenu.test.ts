@@ -1,10 +1,12 @@
 import type { NesApp } from '../lib/nes'
-import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { DOMWrapper, mount } from '@vue/test-utils'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h, nextTick } from 'vue'
 import romsList from '../assets/roms-list.json'
 import { provideNes } from '../composables/useNes'
 import GameMenu from './GameMenu.vue'
+
+const mountedWrappers: Array<ReturnType<typeof mount>> = []
 
 /** 用一个提供 NES 实例的父组件包裹 GameMenu（避免 inject 报错） */
 function mountWithNes(nesApp?: Partial<NesApp>) {
@@ -16,31 +18,66 @@ function mountWithNes(nesApp?: Partial<NesApp>) {
       return () => h(GameMenu)
     },
   })
-  return mount(Parent)
+  const wrapper = mount(Parent, { attachTo: document.body })
+  mountedWrappers.push(wrapper)
+  return wrapper
+}
+
+async function openMenu(wrapper: ReturnType<typeof mountWithNes>) {
+  await wrapper.find('[aria-label="选择游戏"]').trigger('keydown', { key: 'Enter' })
+  await nextTick()
+}
+
+async function openMenuByPointer(wrapper: ReturnType<typeof mountWithNes>) {
+  const trigger = wrapper.find('[aria-label="选择游戏"]').element as HTMLElement
+  trigger.hasPointerCapture = () => false
+  trigger.releasePointerCapture = () => {}
+  trigger.dispatchEvent(new MouseEvent('pointerdown', {
+    bubbles: true,
+    button: 0,
+    ctrlKey: false,
+  }))
+  await nextTick()
 }
 
 describe('gameMenu', () => {
-  it('根据 romsList 渲染游戏选项', () => {
-    const wrapper = mountWithNes()
-    const options = wrapper.findAll('optgroup[label="经典"] option')
+  afterEach(() => {
+    mountedWrappers.splice(0).forEach(wrapper => wrapper.unmount())
+    document.body.innerHTML = ''
+  })
 
+  it('打开菜单后根据 romsList 渲染游戏选项', async () => {
+    const wrapper = mountWithNes()
+    await openMenu(wrapper)
+
+    const options = document.body.querySelectorAll('[role="option"]')
     expect(options).toHaveLength(romsList.length)
-    expect(wrapper.text()).toContain(romsList[0].name)
+    expect(document.body.textContent).toContain(romsList[0].name)
   })
 
   it('选择游戏时加载对应 ROM', async () => {
     const load = vi.fn()
     const wrapper = mountWithNes({ load })
+    await openMenu(wrapper)
 
-    await wrapper.find('select').setValue(`roms/${romsList[0].path}`)
+    const option = document.body.querySelectorAll<HTMLElement>('[role="option"]')[0]
+    await new DOMWrapper(option).trigger('keydown', { key: 'Enter' })
+    await nextTick()
     expect(load).toHaveBeenCalledWith(`roms/${romsList[0].path}`)
   })
 
-  it('保持在占位项时不加载', async () => {
+  it('仅打开菜单时不加载游戏', async () => {
     const load = vi.fn()
     const wrapper = mountWithNes({ load })
 
-    await wrapper.find('select').trigger('change')
+    await openMenu(wrapper)
     expect(load).not.toHaveBeenCalled()
+  })
+
+  it('指针点击选择入口可以打开游戏列表', async () => {
+    const wrapper = mountWithNes()
+
+    await openMenuByPointer(wrapper)
+    expect(document.body.querySelectorAll('[role="option"]')).toHaveLength(romsList.length)
   })
 })

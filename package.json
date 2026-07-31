@@ -1,7 +1,7 @@
 {
   "name": "fc",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packageManager": "pnpm@10.13.1",
   "author": {
     "url": "https://www.yunyoujun.cn",
@@ -29,6 +29,7 @@
     "@fontsource/press-start-2p": "^5.2.7",
     "@yunlefun/sso": "^0.1.0",
     "jsnes": "^2.1.0",
+    "reka-ui": "^2.10.1",
     "vue": "^3.5.38",
     "vue-gtag": "^3.7.1"
   },

@@ -28,23 +28,80 @@ interface CbSessionUser {
 type CloudbaseModule = typeof import('@cloudbase/js-sdk')
 export type CloudbaseApp = ReturnType<CloudbaseModule['init']>
 type CloudbaseAuth = ReturnType<CloudbaseApp['auth']>
+type CloudbaseCore = typeof import('@cloudbase/js-sdk/app')
 
+let cloudbaseCore: CloudbaseCore | undefined
 let app: CloudbaseApp | undefined
 let auth: CloudbaseAuth | undefined
+let authInitialization: Promise<CloudbaseAuth> | undefined
+let authRegistered = false
+let databaseRegistration: Promise<void> | undefined
+let databaseRegistered = false
 
 const user = ref<YlfUser | null>(null)
 const ready = ref(false)
 const loading = ref(false)
 const isLoggedIn = computed(() => !!user.value)
 
-/** 懒加载 CloudBase SDK 并初始化（重型 SDK 不进首屏，登录时才加载） */
-async function ensureAuth(): Promise<CloudbaseAuth> {
-  if (!auth) {
-    const cloudbase = (await import('@cloudbase/js-sdk')).default
-    app = cloudbase.init(ACCESS_KEY ? { env: ENV_ID, accessKey: ACCESS_KEY } : { env: ENV_ID })
-    auth = app.auth({ persistence: 'local' })
+/** 按需加载 CloudBase App/Auth，并复用同一个初始化实例 */
+async function initializeAuth(): Promise<CloudbaseAuth> {
+  const [{ default: cloudbase }, { registerAuth }] = await Promise.all([
+    import('@cloudbase/js-sdk/app'),
+    import('@cloudbase/js-sdk/auth'),
+  ])
+
+  cloudbaseCore = cloudbase
+  const initializedApp = cloudbase.init(ACCESS_KEY ? { env: ENV_ID, accessKey: ACCESS_KEY } : { env: ENV_ID })
+  if (!authRegistered) {
+    // 3.4.x 的子模块在部分打包布局下会自动注册，缺失时再显式补注册
+    if (typeof initializedApp.auth !== 'function')
+      registerAuth(cloudbase)
+    authRegistered = true
   }
-  return auth
+  const initializedAuth = initializedApp.auth({ persistence: 'local' })
+  app = initializedApp
+  auth = initializedAuth
+  return initializedAuth
+}
+
+function ensureAuth(): Promise<CloudbaseAuth> {
+  if (auth)
+    return Promise.resolve(auth)
+
+  if (!authInitialization) {
+    authInitialization = initializeAuth().catch((error: unknown) => {
+      authInitialization = undefined
+      throw error
+    })
+  }
+
+  return authInitialization
+}
+
+/** Database 仅在云存档首次访问时注册，失败后允许下次重试 */
+async function initializeDatabase(): Promise<void> {
+  await ensureAuth()
+  if (!cloudbaseCore)
+    throw new Error('CloudBase App 未初始化')
+
+  const { registerDatabase } = await import('@cloudbase/js-sdk/database')
+  if (typeof app?.database !== 'function')
+    registerDatabase(cloudbaseCore)
+  databaseRegistered = true
+}
+
+function ensureDatabase(): Promise<void> {
+  if (databaseRegistered)
+    return Promise.resolve()
+
+  if (!databaseRegistration) {
+    databaseRegistration = initializeDatabase().catch((error: unknown) => {
+      databaseRegistration = undefined
+      throw error
+    })
+  }
+
+  return databaseRegistration
 }
 
 function toYlfUser(u: CbSessionUser | undefined | null): YlfUser | null {
@@ -59,9 +116,19 @@ function toYlfUser(u: CbSessionUser | undefined | null): YlfUser | null {
   }
 }
 
+function isMissingCredentials(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('credentials not found')
+}
+
 async function syncSession(): Promise<void> {
   // getSession() 是可靠的登录态判断（getLoginState 在带 accessKey 时会误报已登录）
-  const { data } = await (await ensureAuth()).getSession()
+  const { data, error } = await (await ensureAuth()).getSession()
+  if (error && !isMissingCredentials(error))
+    throw error
+  if (error) {
+    user.value = null
+    return
+  }
   user.value = toYlfUser(data?.session?.user as CbSessionUser | undefined)
 }
 
@@ -73,12 +140,14 @@ async function initAuth(): Promise<void> {
     // 'not_authenticated' 是「主站未登录」的正常结果；其余（如 invalid_request 未加白名单）值得记录便于排查
     if (!res.ok && res.reason !== 'not_authenticated')
       console.warn('[ylf-auth] 静默登录未建立会话：', res.reason)
+    await syncSession()
   }
   catch (error) {
     console.error('云乐坊静默登录失败', error)
   }
-  await syncSession()
-  ready.value = true
+  finally {
+    ready.value = true
+  }
 }
 
 /** 主动登录（弹窗引导） */
@@ -122,6 +191,7 @@ export function useYlfAuth() {
     logout,
     /** 供存档同步等模块复用同一个已初始化的 CloudBase auth/app */
     ensureAuth,
+    ensureDatabase,
     getApp: () => app,
   }
 }

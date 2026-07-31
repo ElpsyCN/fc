@@ -28,10 +28,10 @@ const cloudSaves = ref<CloudSave[]>([])
 const syncing = ref(false)
 
 export function useSaveSync() {
-  const { user, isLoggedIn, ensureAuth, getApp } = useYlfAuth()
+  const { user, isLoggedIn, ensureDatabase, getApp } = useYlfAuth()
 
   async function getDb() {
-    await ensureAuth()
+    await ensureDatabase()
     const app = getApp()
     if (!app)
       throw new Error('CloudBase 未初始化')
