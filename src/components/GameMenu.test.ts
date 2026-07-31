@@ -40,6 +40,26 @@ async function openMenuByPointer(wrapper: ReturnType<typeof mountWithNes>) {
   await nextTick()
 }
 
+async function openMenuByClick(wrapper: ReturnType<typeof mountWithNes>) {
+  await wrapper.find('[aria-label="选择游戏"]').trigger('click')
+  await nextTick()
+}
+
+function createTouchPointerEvent(type: string) {
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    button: 0,
+    clientX: 20,
+    clientY: 20,
+  })
+  Object.defineProperties(event, {
+    pointerId: { value: 1 },
+    pointerType: { value: 'touch' },
+    isPrimary: { value: true },
+  })
+  return event
+}
+
 describe('gameMenu', () => {
   afterEach(() => {
     mountedWrappers.splice(0).forEach(wrapper => wrapper.unmount())
@@ -79,5 +99,36 @@ describe('gameMenu', () => {
 
     await openMenuByPointer(wrapper)
     expect(document.body.querySelectorAll('[role="option"]')).toHaveLength(romsList.length)
+  })
+
+  it('仅触发 click 时也可以打开列表并选择游戏', async () => {
+    const load = vi.fn()
+    const wrapper = mountWithNes({ load })
+
+    await openMenuByClick(wrapper)
+    const options = document.body.querySelectorAll<HTMLElement>('[role="option"]')
+    expect(options).toHaveLength(romsList.length)
+
+    await new DOMWrapper(options[0]).trigger('click')
+    await nextTick()
+    expect(load).toHaveBeenCalledWith(`roms/${romsList[0].path}`)
+  })
+
+  it('触摸按下即可打开列表并通过触摸抬起选择游戏', async () => {
+    const load = vi.fn()
+    const wrapper = mountWithNes({ load })
+    const trigger = wrapper.find('[aria-label="选择游戏"]').element
+
+    trigger.dispatchEvent(createTouchPointerEvent('pointerdown'))
+    await nextTick()
+
+    const options = document.body.querySelectorAll<HTMLElement>('[role="option"]')
+    expect(options).toHaveLength(romsList.length)
+
+    options[0].dispatchEvent(createTouchPointerEvent('pointerdown'))
+    options[0].dispatchEvent(createTouchPointerEvent('pointerup'))
+    await nextTick()
+    await nextTick()
+    expect(load).toHaveBeenCalledWith(`roms/${romsList[0].path}`)
   })
 })

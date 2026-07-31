@@ -22,11 +22,35 @@ import { useNes } from '../composables/useNes'
 
 const nesApp = useNes()
 const currentGame = ref<string>()
+const menuOpen = ref(false)
+let loadedGame: string | undefined
 
 /** 切换游戏：加载所选 ROM */
 function selectGame(game: string | undefined) {
-  if (game)
-    nesApp.value?.load(game)
+  const app = nesApp.value
+  if (!game || !app || game === loadedGame)
+    return
+
+  app.load(game)
+  loadedGame = game
+}
+
+/** 兼容只派发 click、缺少完整 PointerEvent 序列的移动端 WebView */
+function openMenuByClick() {
+  menuOpen.value = true
+}
+
+function openMenuByPointer(event: PointerEvent) {
+  if (event.isPrimary !== false && event.button === 0 && event.pointerType !== 'mouse')
+    menuOpen.value = true
+}
+
+function selectGameByClick(game: string) {
+  if (currentGame.value !== game) {
+    currentGame.value = game
+    selectGame(game)
+  }
+  menuOpen.value = false
 }
 </script>
 
@@ -34,13 +58,23 @@ function selectGame(game: string | undefined) {
   <div class="nes-roms">
     <SelectRoot
       v-model="currentGame"
+      v-model:open="menuOpen"
       @update:model-value="selectGame"
     >
-      <SelectTrigger class="nes-select" aria-label="选择游戏">
-        <SelectValue class="nes-select-value" placeholder="选择游戏..." />
-        <SelectIcon class="nes-select-icon">
-          <i-mdi-chevron-down aria-hidden="true" />
-        </SelectIcon>
+      <SelectTrigger as-child>
+        <button
+          type="button"
+          class="nes-select"
+          aria-label="选择游戏"
+          @click="openMenuByClick"
+          @pointerdown.capture="openMenuByPointer"
+          @touchstart.passive="openMenuByClick"
+        >
+          <SelectValue class="nes-select-value" placeholder="选择游戏..." />
+          <SelectIcon class="nes-select-icon">
+            <i-mdi-chevron-down aria-hidden="true" />
+          </SelectIcon>
+        </button>
       </SelectTrigger>
 
       <SelectPortal>
@@ -66,6 +100,7 @@ function selectGame(game: string | undefined) {
                 :key="`${rom.path}-${rom.name}`"
                 class="nes-select-item"
                 :value="`roms/${rom.path}`"
+                @click="selectGameByClick(`roms/${rom.path}`)"
               >
                 <SelectItemText>{{ rom.name }}</SelectItemText>
                 <SelectItemIndicator class="nes-select-indicator">
@@ -96,6 +131,7 @@ function selectGame(game: string | undefined) {
 }
 
 .nes-select {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -237,9 +273,15 @@ function selectGame(game: string | undefined) {
 
 @media (max-width: 640px), (hover: none) and (pointer: coarse) {
   .nes-select {
-    height: 44px;
+    height: 26px;
     padding-inline: 0.65rem;
     font-size: 0.85rem;
+
+    &::after {
+      position: absolute;
+      content: "";
+      inset: -10px 0;
+    }
   }
 
   .nes-select-content {

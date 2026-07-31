@@ -377,6 +377,15 @@ canvas#nes-canvas {
 
 @media screen and (orientation: portrait) {
   /* 竖屏 */
+  // controller-area 在竖屏中是覆盖整列的透明布局层，只让实际摇杆和 GitHub 按钮接收触控，
+  // 避免它遮挡下方模拟器工具栏的游戏选择器。
+  .controller-area {
+    pointer-events: none;
+  }
+  .controller-area .controller,
+  .controller-area .github-link {
+    pointer-events: auto;
+  }
   .speaker {
     display: none;
   }
@@ -437,6 +446,9 @@ canvas#nes-canvas {
   .emulator-bar .game-controls {
     gap: 4px;
   }
+  .emulator-bar .nes-select {
+    height: 24px;
+  }
   .emulator-bar .account-btn,
   .emulator-bar .cloud-trigger,
   .emulator-bar .help-trigger,
@@ -471,6 +483,7 @@ canvas#nes-canvas {
   }
 
   .emulator-bar .nes-select {
+    height: 22px;
     padding-right: 0.2rem;
     padding-left: 0.2rem;
     font-size: 0.72rem;
