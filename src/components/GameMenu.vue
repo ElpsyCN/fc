@@ -11,7 +11,6 @@ import {
   SelectRoot,
   SelectScrollDownButton,
   SelectScrollUpButton,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
   SelectViewport,
@@ -108,11 +107,6 @@ function selectGameByClick(game: string) {
                 </SelectItemIndicator>
               </SelectItem>
             </SelectGroup>
-
-            <SelectSeparator class="nes-select-separator" />
-            <SelectLabel class="nes-select-provider">
-              
-            </SelectLabel>
           </SelectViewport>
 
           <SelectScrollDownButton class="nes-select-scroll-button" aria-label="向下滚动">
@@ -208,19 +202,12 @@ function selectGameByClick(game: string) {
   padding: 4px;
 }
 
-.nes-select-label,
-.nes-select-provider {
+.nes-select-label {
   padding: 6px 10px;
   color: #6b665a;
   font-size: 0.7rem;
   font-weight: 700;
   text-align: left;
-}
-
-.nes-select-provider {
-  font-size: 0.65rem;
-  font-weight: 400;
-  text-align: center;
 }
 
 .nes-select-item {
@@ -253,12 +240,6 @@ function selectGameByClick(game: string) {
   display: inline-flex;
   align-items: center;
   font-size: 1rem;
-}
-
-.nes-select-separator {
-  height: 1px;
-  margin: 4px 6px;
-  background: rgba(71, 79, 81, 0.25);
 }
 
 .nes-select-scroll-button {
@@ -334,10 +315,6 @@ function selectGameByClick(game: string) {
     touch-action: none;
   }
 
-  .nes-select-provider {
-    padding-block: 10px;
-    line-height: 1.5;
-  }
 }
 
 @keyframes nes-select-in {
