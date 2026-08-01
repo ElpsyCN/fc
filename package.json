@@ -16,7 +16,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:function": "node scripts/prepare-function-build.mjs && pnpm --filter @elpsycn/fc-api deploy --prod .cloudbase/functions/fc-api",
+    "build:function": "node scripts/prepare-function-build.mjs && pnpm --filter @elpsycn/fc-api deploy --legacy --prod .cloudbase/functions/fc-api",
     "preview": "vite preview",
     "serve": "vite preview",
     "lint": "eslint .",
