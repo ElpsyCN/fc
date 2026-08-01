@@ -1,8 +1,10 @@
 shellEmulator: true
+injectWorkspacePackages: true
 trustPolicy: no-downgrade
 
 packages:
   - .
+  - cloudfunctions/*
 
 overrides:
   postcss: 8.5.18

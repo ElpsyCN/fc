@@ -1,6 +1,6 @@
 # 红白机 FC
 
-[![GitHub Pages](https://github.com/ElpsyCN/fc/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/ElpsyCN/fc/actions/workflows/gh-pages.yml)
+[![CI](https://github.com/ElpsyCN/fc/actions/workflows/ci.yml/badge.svg)](https://github.com/ElpsyCN/fc/actions/workflows/ci.yml)
 
 > 预览地址: <https://fc.elpsy.cn>
 > 开发版预览: <https://fc.yunyoujun.cn>
@@ -66,16 +66,51 @@ pnpm lint:fix
 
 ## 云乐坊账号接入
 
-登录基于 [`@yunlefun/sso`](https://www.npmjs.com/package/@yunlefun/sso) + CloudBase Auth（重型 SDK 已动态 import 代码分割，不影响首屏）。可用环境变量覆盖默认：
+前端由 EdgeOne Makers（原 EdgeOne Pages）连接 Git 仓库构建并静态托管。登录使用 [`@yunlefun/sso`](https://www.npmjs.com/package/@yunlefun/sso) v3 顶层 Redirect + PKCE；CloudBase Auth 只在授权回跳时以 `persistence: 'none'` 临时加载，长期登录态由同源 `/api` 的 HttpOnly Cookie 管理。
+
+同仓库的 EdgeOne Node.js Cloud Function 仅代理 `fc.elpsy.cn/api/*` 到 CloudBase HTTP Function；选用 Node.js 运行时是因为云存档请求体可达约 1.5 MB，超过 Edge Function 的 1 MB 上限。会员校验、存档上限和数据权限均在 CloudBase BFF 执行，普通访问不会加载 CloudBase 浏览器 SDK。
+
+前端可用环境变量：
 
 | 环境变量 | 说明 | 默认 |
 | --- | --- | --- |
 | `VITE_CLOUDBASE_ENV` | CloudBase 环境 ID | `yunlefun-8g7ybcxc7345c490` |
 | `VITE_CLOUDBASE_KEY` | publishable key（可选） | 空 |
-| `VITE_YLF_MEMBER_COLLECTION` | 会员集合名 | `user_memberships` |
+| `VITE_YLF_SSO_CLIENT_ID` | SSO Client Registry 标识 | `fc-web` |
+| `VITE_FC_API_BASE` | 同源 BFF 路径 | `/api` |
 | `VITE_FC_MAX_SAVES` | 云存档总数上限 | `20` |
 
-> 接入须知：① 站点 origin 需在云乐坊后台加入 SSO 白名单；② 云存档需 CloudBase `fc_saves` 集合并配置「仅创建者可读写」权限；③ 会员状态直接复用 `www.yunle.fun` 的 `user_memberships` 会员体系（按 `userId` 查询，`expireAt` 晚于当前即为有效会员），无需额外维护。
+CloudBase Function 运行时配置：
+
+| 环境变量 | 说明 | 默认 |
+| --- | --- | --- |
+| `CLOUDBASE_ENV_ID` | 身份双证明校验使用的环境 ID | `yunlefun-8g7ybcxc7345c490` |
+| `FC_ALLOWED_ORIGINS` | Cookie 接口允许的精确 Origin（逗号分隔） | `https://fc.elpsy.cn` |
+| `FC_MAX_CLOUD_SAVES` | 服务端强制的每用户存档上限 | `20` |
+| `FC_SESSION_CSRF_SECRET` | session-bound CSRF 密钥，至少 32 字符 | 无，必须通过函数环境 Secret 注入 |
+
+部署资源要求：
+
+- SSO Client Registry 注册 `fc-web`，精确绑定 `https://fc.elpsy.cn/`。
+- `ylf_app_sessions`、`fc_saves`、`fc_save_quotas` 均为 server-only；`fc_saves` 需要 `userId + updatedAt(desc)` 复合索引。`fc_save_quotas` 每个用户只有一条计数记录，用于在事务中严格阻止并发请求突破 20 个存档上限。
+- `fc-api` 使用 CloudBase `Nodejs20.19` HTTP Function，`scf_bootstrap` 监听端口 `9000`。
+- EdgeOne Makers 连接本 Git 仓库，按 `edgeone.json` 使用 Node.js 22、pnpm 10 构建 `dist`。
+- `cloud-functions/api/[[default]].js` 将同源 `/api/*` 代理到 `https://api.yunle.fun/fc-api`；可通过 EdgeOne 环境变量 `FC_API_UPSTREAM_URL` 覆盖。
+- EdgeOne 预览域名只验证静态资源、Functions 构建和 `/api/health`；SSO 回跳与 unsafe API 强制精确生产 Origin，因此完整登录/云存档验证应在上游就绪后切换 `fc.elpsy.cn`，并保留 DNS 回滚方案。
+
+本地构建 CloudBase Function 部署目录：
+
+```bash
+pnpm build:function
+```
+
+完整联调由 EdgeOne CLI 同时启动 Vite 与 Functions（CLI 会读取现有的 `pnpm dev`，不要把 `edgeone makers dev` 配置成项目的 `dev` 命令）：
+
+```bash
+PAGES_SOURCE=skills edgeone pages dev
+```
+
+新版 CLI 也可使用等价的 `edgeone makers dev` 命令。
 
 ## PWA 开关
 

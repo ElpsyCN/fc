@@ -1,0 +1,12 @@
+{
+  "name": "fc",
+  "buildCommand": "corepack pnpm build",
+  "installCommand": "corepack pnpm install --frozen-lockfile",
+  "outputDirectory": "dist",
+  "nodeVersion": "22.17.1",
+  "cloudFunctions": {
+    "nodejs": {
+      "maxDuration": 30
+    }
+  }
+}

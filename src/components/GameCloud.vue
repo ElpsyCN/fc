@@ -15,7 +15,7 @@ const {
   checkMember,
   refreshCloudSaves,
   pushSave,
-  getSaveState,
+  loadSaveState,
   removeSave,
 } = useSaveSync()
 const { showToast } = useToast()
@@ -54,9 +54,9 @@ async function onUpload() {
   showToast(res.ok ? '已上传到云存档' : res.reason ?? '上传失败')
 }
 
-function onLoad(id: string) {
+async function onLoad(id: string) {
   const app = nesApp.value
-  const state = getSaveState(id)
+  const state = await loadSaveState(id)
   if (!app || !state)
     return
   try {
@@ -75,7 +75,7 @@ async function onRemove(id: string) {
 
 async function onLogin() {
   const res = await login()
-  if (res.ok) {
+  if (res.ok && !res.redirecting) {
     await checkMember()
     await refreshCloudSaves()
   }

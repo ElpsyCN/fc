@@ -2,129 +2,124 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const sdk = vi.hoisted(() => {
   const auth = {
-    getSession: vi.fn().mockResolvedValue({ data: { session: undefined } }),
     signOut: vi.fn().mockResolvedValue(undefined),
   }
-  const get = vi.fn().mockResolvedValue({ data: [] })
-  const collection = vi.fn(() => ({
-    where: vi.fn(() => ({
-      limit: vi.fn(() => ({ get })),
-    })),
-  }))
-  const database = { collection }
   const authFactory = vi.fn(() => auth)
-  const databaseFactory = vi.fn(() => database)
-  const app: {
-    auth?: typeof authFactory
-    database?: typeof databaseFactory
-  } = {}
-  const core = {
-    init: vi.fn(() => app),
-  }
+  const app: { auth?: typeof authFactory } = {}
+  const core = { init: vi.fn(() => app) }
   const registerAuth = vi.fn(() => {
     app.auth = authFactory
   })
-  const registerDatabase = vi.fn(() => {
-    app.database = databaseFactory
-  })
-
   return {
+    adoptSsoIdentityProof: vi.fn().mockResolvedValue({
+      accessToken: 'access-token-proof',
+      identityAssertion: 'identity-assertion-proof',
+      nonce: 'n'.repeat(43),
+    }),
     app,
     auth,
     authFactory,
-    collection,
+    consumeSsoRedirect: vi.fn(),
     core,
-    databaseFactory,
-    databaseModuleLoads: 0,
-    get,
     registerAuth,
-    registerDatabase,
-    signInWithSso: vi.fn().mockResolvedValue({ ok: false, reason: 'not_authenticated' }),
+    startSsoRedirect: vi.fn().mockResolvedValue(undefined),
   }
 })
 
-vi.mock('@cloudbase/js-sdk/app', () => ({
-  default: sdk.core,
-}))
-
-vi.mock('@cloudbase/js-sdk/auth', () => ({
-  registerAuth: sdk.registerAuth,
-}))
-
-vi.mock('@cloudbase/js-sdk/database', () => {
-  sdk.databaseModuleLoads += 1
-  return { registerDatabase: sdk.registerDatabase }
-})
-
+vi.mock('@cloudbase/js-sdk/app', () => ({ default: sdk.core }))
+vi.mock('@cloudbase/js-sdk/auth', () => ({ registerAuth: sdk.registerAuth }))
 vi.mock('@yunlefun/sso', () => ({
-  signInWithSso: sdk.signInWithSso,
+  consumeSsoRedirect: sdk.consumeSsoRedirect,
+  startSsoRedirect: sdk.startSsoRedirect,
+}))
+vi.mock('@yunlefun/sso/browser', () => ({
+  adoptSsoIdentityProof: sdk.adoptSsoIdentityProof,
 }))
 
-describe('useYlfAuth CloudBase 模块加载', () => {
+function jsonResponse(payload: unknown, status = 200): Response {
+  return new Response(JSON.stringify(payload), {
+    headers: { 'content-type': 'application/json' },
+    status,
+  })
+}
+
+describe('useYlfAuth SSO v3 会话', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.resetModules()
-    sdk.databaseModuleLoads = 0
     delete sdk.app.auth
-    delete sdk.app.database
+    window.location.hash = ''
+    localStorage.clear()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({
+      authenticated: false,
+      ok: true,
+    })))
   })
 
-  it('并发初始化时仅注册一次 App/Auth，且不提前加载 Database', async () => {
+  it('普通访问只恢复 BFF 会话，不加载 CloudBase SDK', async () => {
     const { useYlfAuth } = await import('./useYlfAuth')
-    const first = useYlfAuth()
-    const second = useYlfAuth()
+    const state = useYlfAuth()
 
-    await Promise.all([first.ensureAuth(), second.ensureAuth()])
+    await Promise.all([state.initAuth(), state.initAuth()])
 
-    expect(sdk.registerAuth).toHaveBeenCalledOnce()
-    expect(sdk.core.init).toHaveBeenCalledOnce()
-    expect(sdk.authFactory).toHaveBeenCalledOnce()
-    expect(sdk.databaseModuleLoads).toBe(0)
-    expect(sdk.registerDatabase).not.toHaveBeenCalled()
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetch).toHaveBeenCalledWith('/api/session', expect.objectContaining({
+      credentials: 'include',
+    }))
+    expect(sdk.core.init).not.toHaveBeenCalled()
+    expect(sdk.consumeSsoRedirect).not.toHaveBeenCalled()
+    expect(state.ready.value).toBe(true)
+    expect(state.user.value).toBeNull()
   })
 
-  it('未找到本地凭据时按未登录处理，不误报静默登录失败', async () => {
-    sdk.auth.getSession.mockResolvedValueOnce({
-      data: {},
-      error: new Error('credentials not found'),
+  it('sSO 回跳使用 memory-only Auth 换取 BFF 会话后立即退出临时 Auth', async () => {
+    window.location.hash = '#ylf_sso=test'
+    sdk.consumeSsoRedirect.mockReturnValueOnce({
+      clientId: 'fc-web',
+      code: 'c'.repeat(43),
+      codeVerifier: 'v'.repeat(43),
+      issuer: 'https://www.yunle.fun',
+      nonce: 'n'.repeat(43),
+      ok: true,
+      redirectUri: 'https://fc.elpsy.cn/',
+      scope: ['identity:bootstrap'],
     })
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse({
+        authenticated: true,
+        csrfToken: 'csrf-token',
+        member: true,
+        ok: true,
+        user: { uid: 'user-1', name: 'Tester' },
+      }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+
     const { useYlfAuth } = await import('./useYlfAuth')
-    const authState = useYlfAuth()
+    const state = useYlfAuth()
+    await state.initAuth()
 
-    await authState.initAuth()
+    expect(sdk.authFactory).toHaveBeenCalledWith({ persistence: 'none' })
+    expect(sdk.adoptSsoIdentityProof).toHaveBeenCalledOnce()
+    expect(fetch).toHaveBeenCalledWith('/api/session/login', expect.objectContaining({ method: 'POST' }))
+    expect(sdk.auth.signOut).toHaveBeenCalledOnce()
+    expect(state.user.value).toEqual({ uid: 'user-1', name: 'Tester' })
+    expect(state.member.value).toBe(true)
 
-    expect(authState.ready.value).toBe(true)
-    expect(authState.user.value).toBeNull()
-    expect(consoleError).not.toHaveBeenCalled()
-    consoleError.mockRestore()
+    await state.logout()
+    const logoutInit = vi.mocked(fetch).mock.calls[1]?.[1]
+    expect(new Headers(logoutInit?.headers).get('x-csrf-token')).toBe('csrf-token')
+    expect(state.user.value).toBeNull()
   })
 
-  it('首次使用云存档数据库时才加载并注册 Database', async () => {
+  it('登录按钮发起顶层 PKCE redirect，不再创建弹窗', async () => {
     const { useYlfAuth } = await import('./useYlfAuth')
-    const { useSaveSync } = await import('./useSaveSync')
-    const authState = useYlfAuth()
+    const result = await useYlfAuth().login()
 
-    await authState.ensureAuth()
-    expect(sdk.databaseModuleLoads).toBe(0)
-
-    authState.user.value = { uid: 'user-1', name: 'Tester' }
-    await useSaveSync().checkMember()
-
-    expect(sdk.databaseModuleLoads).toBe(1)
-    expect(sdk.registerDatabase).toHaveBeenCalledOnce()
-    expect(sdk.databaseFactory).toHaveBeenCalledOnce()
-    expect(sdk.collection).toHaveBeenCalledWith('user_memberships')
-  })
-
-  it('子模块已自动注册时不重复调用注册函数', async () => {
-    sdk.app.auth = sdk.authFactory
-    sdk.app.database = sdk.databaseFactory
-    const { useYlfAuth } = await import('./useYlfAuth')
-
-    await useYlfAuth().ensureDatabase()
-
-    expect(sdk.registerAuth).not.toHaveBeenCalled()
-    expect(sdk.registerDatabase).not.toHaveBeenCalled()
+    expect(result).toEqual({ ok: true, redirecting: true })
+    expect(sdk.startSsoRedirect).toHaveBeenCalledWith({
+      clientId: 'fc-web',
+      redirectUri: 'http://localhost:3000/',
+      scope: ['identity:bootstrap'],
+    })
   })
 })

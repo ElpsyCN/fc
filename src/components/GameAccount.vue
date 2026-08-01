@@ -5,20 +5,23 @@ import { useYlfAuth } from '../composables/useYlfAuth'
 const { user, isLoggedIn, loading, login, logout } = useYlfAuth()
 const { showToast } = useToast()
 
-// SSO 失败原因 → 可操作的中文提示，便于排查；'closed'/'not_authenticated' 属正常未登录，不打扰
+// SSO 失败原因 → 可操作的中文提示。
 const SSO_FAIL_HINT: Record<string, string> = {
+  access_denied: '已取消登录',
+  invalid_redirect: '当前地址未登记为安全回跳地址',
   invalid_request: '本站点未加入云乐坊 SSO 白名单',
-  popup_blocked: '登录弹窗被拦截，请允许弹窗后重试',
-  timeout: '登录超时，请重试',
+  server_error: '登录服务暂时不可用，请稍后重试',
 }
 
 async function onLogin() {
   const res = await login()
+  if (res.redirecting)
+    return
   if (res.ok) {
     showToast(`已登录：${user.value?.name ?? '云乐坊'}`)
     return
   }
-  if (!res.reason || res.reason === 'closed' || res.reason === 'not_authenticated')
+  if (!res.reason)
     return
   showToast(SSO_FAIL_HINT[res.reason] ?? '登录失败，请重试')
 }

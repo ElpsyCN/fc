@@ -16,6 +16,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:function": "node scripts/prepare-function-build.mjs && pnpm --filter @elpsycn/fc-api deploy --prod .cloudbase/functions/fc-api",
     "preview": "vite preview",
     "serve": "vite preview",
     "lint": "eslint .",
@@ -27,7 +28,7 @@
   "dependencies": {
     "@cloudbase/js-sdk": "^3.4.6",
     "@fontsource/press-start-2p": "^5.2.7",
-    "@yunlefun/sso": "^0.1.0",
+    "@yunlefun/sso": "^0.6.0",
     "jsnes": "^2.1.0",
     "reka-ui": "^2.10.1",
     "vue": "^3.5.38",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^9.0.0",
     "@iconify/json": "^2.2.486",
+    "@types/node": "^26.1.2",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.11",
     "eslint": "^10.5.0",

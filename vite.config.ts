@@ -74,7 +74,11 @@ export default defineConfig(({ mode }) => {
     ],
     test: {
       environment: 'jsdom',
-      include: ['src/**/*.{test,spec}.ts'],
+      include: [
+        'src/**/*.{test,spec}.ts',
+        'cloud-functions/**/*.{test,spec}.{js,mjs}',
+        'cloudfunctions/**/*.{test,spec}.{js,mjs}',
+      ],
       clearMocks: true,
     },
   }

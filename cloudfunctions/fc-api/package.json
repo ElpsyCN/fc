@@ -1,0 +1,19 @@
+{
+  "name": "@elpsycn/fc-api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "lib/app.js",
+    "lib/repository.js",
+    "lib/runtime.js",
+    "scf_bootstrap"
+  ],
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.18.3",
+    "@yunlefun/server-session": "0.2.0",
+    "@yunlefun/server-session-cloudbase": "0.2.0",
+    "@yunlefun/sso": "0.6.0"
+  }
+}

@@ -41,7 +41,7 @@ onMounted(async () => {
   // 玩家 1（方向键 + A/S）与玩家 2（IJKL + GHTY）键盘
   unbinders.push(bindKeyboard(app.instance, 1), bindKeyboard(app.instance, 2))
 
-  // 游戏启动后再利用浏览器空闲时间初始化登录，避免与首屏渲染和模拟器启动争抢主线程
+  // 普通访问只在浏览器空闲时恢复轻量 BFF 会话；SSO 回跳已在 main.ts 立即处理。
   cancelAuthInitialization = scheduleIdleTask(() => void initAuth())
 })
 
