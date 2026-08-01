@@ -49,6 +49,9 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.11
         version: 2.4.11(@vue/compiler-dom@3.5.38)(@vue/server-renderer@3.5.38(vue@3.5.38(typescript@6.0.3)))(vue@3.5.38(typescript@6.0.3))
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
       eslint:
         specifier: ^10.5.0
         version: 10.5.0
@@ -6438,7 +6441,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.28.1
       '@esbuild/win32-ia32': 0.28.1
       '@esbuild/win32-x64': 0.28.1
-    optional: true
 
   escalade@3.2.0: {}
 

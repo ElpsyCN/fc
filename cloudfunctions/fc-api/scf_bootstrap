@@ -1,2 +1,2 @@
 #!/bin/bash
-/var/lang/node20/bin/node index.js
+/var/lang/node20/bin/node index.cjs

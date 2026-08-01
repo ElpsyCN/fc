@@ -6,7 +6,7 @@ FC 静态站点的最小同源 BFF。它验证云乐坊 SSO 双证明、签发�
 
 - CloudBase HTTP Function
 - Runtime: `Nodejs20.19`
-- Bootstrap: `/var/lang/node20/bin/node index.js`
+- Bootstrap: `/var/lang/node20/bin/node index.cjs`
 - Port: `9000`
 - Gateway path: `/fc-api`
 - Public function rule: 允许网关调用；业务层仍强制 exact Origin、HttpOnly session 与 session-bound CSRF
@@ -31,7 +31,7 @@ FC 静态站点的最小同源 BFF。它验证云乐坊 SSO 双证明、签发�
 
 1. 发布包含 `fc-web` 的 SSO Client Registry 和 `sso-ticket`。
 2. 创建/收紧数据库集合与索引。
-3. 执行 `pnpm build:function`，部署 `.cloudbase/functions/fc-api`。
+3. 执行 `pnpm build:function`，生成约 1 MiB 的单文件依赖包并部署 `.cloudbase/functions/fc-api`；产物不依赖云端安装 npm 包。
 4. 注入环境变量和 CSRF Secret，开放函数网关权限并绑定 `/fc-api`。
 5. 在 EdgeOne Makers 连接 Git 仓库并部署预览环境；仓库内 `cloud-functions/api/[[default]].js` 接管 `/api/*`。预览环境只验证静态资源、Functions 构建和 `/api/health`，因为 SSO/unsafe API 必须匹配精确生产 Origin。
 6. 确认上游 Registry、数据库、Function 与网关均已就绪后，将 `fc.elpsy.cn` 从 GitHub Pages 切换到 EdgeOne，再验证生产域名的登录、Cookie 和云存档；保留 DNS 回滚方案。
