@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => {
           // 云登录 / 数据库依赖按需加载；离线游戏不需要预缓存这些在线能力
           globIgnores: [
             '**/preview.png',
+            '**/assets/cloud-save-codec-*.js',
             '**/assets/index.esm-*.js',
             '**/assets/esm-*.js',
             '**/assets/dist-*.js',
@@ -72,6 +73,17 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          // 固定云存档压缩库的 chunk 名，便于 PWA 排除预缓存并保持真正按需加载。
+          manualChunks(id) {
+            if (id.includes('/fflate/'))
+              return 'cloud-save-codec'
+          },
+        },
+      },
+    },
     test: {
       environment: 'jsdom',
       include: [
