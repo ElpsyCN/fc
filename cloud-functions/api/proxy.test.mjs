@@ -51,6 +51,7 @@ describe('edgeOne API proxy', () => {
     expect(init.headers.get('x-forwarded-host')).toBe('fc.elpsy.cn')
     expect(init.headers.get('x-forwarded-proto')).toBe('https')
     expect(init.redirect).toBeUndefined()
+    expect(init.body).toBe('{"state":"save"}')
     expect(await new Request(target, init).text()).toBe('{"state":"save"}')
     expect(response.headers.get('set-cookie')).toContain('__Host-fc-session=token')
     expect(response.headers.get('cache-control')).toBe('no-store')
