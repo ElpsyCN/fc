@@ -23,13 +23,12 @@ describe('edgeOne API proxy', () => {
   })
 
   it('forwards cookies, origin and buffered request bodies to the upstream', async () => {
-    const fetchMock = vi.fn(async () => new Response('{"ok":true}', {
+    const transport = vi.fn(async () => new Response('{"ok":true}', {
       headers: {
         'content-type': 'application/json',
         'set-cookie': '__Host-fc-session=token; Path=/; HttpOnly; Secure; SameSite=Lax',
       },
     }))
-    vi.stubGlobal('fetch', fetchMock)
 
     const request = new Request('https://fc.elpsy.cn/api/saves?slot=1', {
       body: '{"state":"save"}',
@@ -40,14 +39,14 @@ describe('edgeOne API proxy', () => {
       },
       method: 'POST',
     })
-    const response = await proxyRequest(createContext(request))
+    const response = await proxyRequest(createContext(request), transport)
 
-    expect(fetchMock).toHaveBeenCalledOnce()
-    const [target, init] = fetchMock.mock.calls[0]
-    expect(target).toBe(`${DEFAULT_UPSTREAM_BASE_URL}/saves?slot=1`)
+    expect(transport).toHaveBeenCalledOnce()
+    const [target, init] = transport.mock.calls[0]
+    expect(target.href).toBe(`${DEFAULT_UPSTREAM_BASE_URL}/saves?slot=1`)
     expect(init.headers.get('cookie')).toBe('__Host-fc-session=old-token')
     expect(init.headers.get('origin')).toBe('https://fc.elpsy.cn')
-    expect(init.headers.has('content-length')).toBe(false)
+    expect(init.headers.get('content-length')).toBe('16')
     expect(init.headers.get('x-forwarded-host')).toBe('fc.elpsy.cn')
     expect(init.headers.get('x-forwarded-proto')).toBe('https')
     expect(init.redirect).toBeUndefined()
@@ -58,28 +57,29 @@ describe('edgeOne API proxy', () => {
   })
 
   it('rejects non-HTTPS upstream configuration without forwarding the request', async () => {
-    const fetchMock = vi.fn()
+    const transport = vi.fn()
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.stubGlobal('fetch', fetchMock)
 
     const response = await proxyRequest(createContext(
       new Request('https://fc.elpsy.cn/api/session'),
       { FC_API_UPSTREAM_URL: 'http://127.0.0.1:9000/fc-api' },
-    ))
+    ), transport)
 
     expect(response.status).toBe(502)
     expect(await response.json()).toEqual({ ok: false, reason: 'upstream_unavailable' })
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(transport).not.toHaveBeenCalled()
     expect(consoleError).toHaveBeenCalledOnce()
   })
 
   it('does not proxy paths outside the API namespace', async () => {
-    const fetchMock = vi.fn()
-    vi.stubGlobal('fetch', fetchMock)
+    const transport = vi.fn()
 
-    const response = await proxyRequest(createContext(new Request('https://fc.elpsy.cn/roms/game.nes')))
+    const response = await proxyRequest(
+      createContext(new Request('https://fc.elpsy.cn/roms/game.nes')),
+      transport,
+    )
 
     expect(response.status).toBe(404)
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(transport).not.toHaveBeenCalled()
   })
 })
