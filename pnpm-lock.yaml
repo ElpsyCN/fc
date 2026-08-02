@@ -19,8 +19,8 @@ importers:
         specifier: ^5.2.7
         version: 5.2.7
       '@yunlefun/sso':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.6.1
+        version: 0.6.1
       jsnes:
         specifier: ^2.1.0
         version: 2.1.0
@@ -95,8 +95,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0(@cloudbase/node-sdk@3.18.3(ws@8.21.0))
       '@yunlefun/sso':
-        specifier: 0.6.0
-        version: 0.6.0
+        specifier: 0.6.1
+        version: 0.6.1
 
 packages:
 
@@ -1788,8 +1788,8 @@ packages:
       h3:
         optional: true
 
-  '@yunlefun/sso@0.6.0':
-    resolution: {integrity: sha512-zLr4eb53ti9fhjRCnPlOWVA32L/KxtoLVSeTK39yrv19bvcAvGEwWO4Yr5m2rqpvzyNO+Fc3C06CNQ8srOa9mw==}
+  '@yunlefun/sso@0.6.1':
+    resolution: {integrity: sha512-AFzQHo/JhE8ogltJaFezEjqKl4JzA42C28jp4Ld2fdmVYAVD83t6aEWl4xGD2iUbgz4uiR0rhqAy4z0y6pAGuQ==}
 
   abbrev@2.0.0:
     resolution: {integrity: sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==}
@@ -5966,7 +5966,7 @@ snapshots:
 
   '@yunlefun/server-session@0.2.0': {}
 
-  '@yunlefun/sso@0.6.0':
+  '@yunlefun/sso@0.6.1':
     dependencies:
       jose: 6.2.6
 

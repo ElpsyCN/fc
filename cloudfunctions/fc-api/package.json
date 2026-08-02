@@ -14,6 +14,6 @@
     "@cloudbase/node-sdk": "^3.18.3",
     "@yunlefun/server-session": "0.2.0",
     "@yunlefun/server-session-cloudbase": "0.2.0",
-    "@yunlefun/sso": "0.6.0"
+    "@yunlefun/sso": "0.6.1"
   }
 }
