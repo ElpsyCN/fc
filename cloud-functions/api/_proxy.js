@@ -53,6 +53,10 @@ export async function proxyRequest(context) {
     )
     const headers = new Headers(request.headers)
     cleanHopByHopHeaders(headers)
+    // EdgeOne's Node.js runtime cannot reliably forward the incoming Web
+    // ReadableStream as an outbound fetch body. Buffer the small API payload
+    // and let fetch calculate the new content length instead.
+    headers.delete('content-length')
     headers.set('accept-encoding', 'identity')
     headers.set('x-forwarded-host', requestUrl.host)
     headers.set('x-forwarded-proto', requestUrl.protocol.replace(':', ''))
@@ -60,15 +64,15 @@ export async function proxyRequest(context) {
     const init = {
       headers,
       method: request.method,
-      redirect: 'manual',
       signal: request.signal,
     }
-    if (request.method !== 'GET' && request.method !== 'HEAD') {
-      init.body = request.body
-      init.duplex = 'half'
-    }
+    if (request.method !== 'GET' && request.method !== 'HEAD')
+      init.body = await request.arrayBuffer()
 
-    const upstream = await fetch(target, init)
+    // The Pages runtime turns redirect:"manual" into a synthetic 307 pointing
+    // at the upstream URL. The CloudBase route is fixed and HTTPS-only, so the
+    // standard fetch redirect behavior is safe and preserves the response.
+    const upstream = await fetch(target.href, init)
     const responseHeaders = new Headers(upstream.headers)
     cleanHopByHopHeaders(responseHeaders)
     responseHeaders.delete('content-length')

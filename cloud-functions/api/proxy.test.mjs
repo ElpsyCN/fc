@@ -22,7 +22,7 @@ describe('edgeOne API proxy', () => {
     expect(target.href).toBe(`${DEFAULT_UPSTREAM_BASE_URL}/saves/save-1?full=1`)
   })
 
-  it('streams cookies, origin and request bodies to the upstream', async () => {
+  it('forwards cookies, origin and buffered request bodies to the upstream', async () => {
     const fetchMock = vi.fn(async () => new Response('{"ok":true}', {
       headers: {
         'content-type': 'application/json',
@@ -44,11 +44,13 @@ describe('edgeOne API proxy', () => {
 
     expect(fetchMock).toHaveBeenCalledOnce()
     const [target, init] = fetchMock.mock.calls[0]
-    expect(target.href).toBe(`${DEFAULT_UPSTREAM_BASE_URL}/saves?slot=1`)
+    expect(target).toBe(`${DEFAULT_UPSTREAM_BASE_URL}/saves?slot=1`)
     expect(init.headers.get('cookie')).toBe('__Host-fc-session=old-token')
     expect(init.headers.get('origin')).toBe('https://fc.elpsy.cn')
+    expect(init.headers.has('content-length')).toBe(false)
     expect(init.headers.get('x-forwarded-host')).toBe('fc.elpsy.cn')
     expect(init.headers.get('x-forwarded-proto')).toBe('https')
+    expect(init.redirect).toBeUndefined()
     expect(await new Request(target, init).text()).toBe('{"state":"save"}')
     expect(response.headers.get('set-cookie')).toContain('__Host-fc-session=token')
     expect(response.headers.get('cache-control')).toBe('no-store')
