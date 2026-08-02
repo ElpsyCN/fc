@@ -4,6 +4,7 @@ import { useNes } from '../composables/useNes'
 import { useSaveSync } from '../composables/useSaveSync'
 import { useToast } from '../composables/useToast'
 import { useYlfAuth } from '../composables/useYlfAuth'
+import { decodeCloudSaveState, encodeCloudSaveState } from '../lib/cloud-save-state'
 
 const nesApp = useNes()
 const { isLoggedIn, login } = useYlfAuth()
@@ -49,7 +50,7 @@ async function onUpload() {
     showToast('请先开始游戏')
     return
   }
-  const state = JSON.stringify(app.instance.toJSON())
+  const state = await encodeCloudSaveState(JSON.stringify(app.instance.toJSON()))
   const res = await pushSave(rom, `${romName(rom)} ${formatTime(Date.now())}`, state)
   showToast(res.ok ? '已上传到云存档' : res.reason ?? '上传失败')
 }
@@ -60,7 +61,8 @@ async function onLoad(id: string) {
   if (!app || !state)
     return
   try {
-    app.instance.fromJSON(JSON.parse(state) as Parameters<typeof app.instance.fromJSON>[0])
+    const decoded = await decodeCloudSaveState(state)
+    app.instance.fromJSON(JSON.parse(decoded) as Parameters<typeof app.instance.fromJSON>[0])
     showToast('已读取云存档')
     open.value = false
   }

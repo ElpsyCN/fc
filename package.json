@@ -29,6 +29,7 @@
     "@cloudbase/js-sdk": "^3.4.6",
     "@fontsource/press-start-2p": "^5.2.7",
     "@yunlefun/sso": "^0.6.1",
+    "fflate": "^0.8.3",
     "jsnes": "^2.1.0",
     "reka-ui": "^2.10.1",
     "vue": "^3.5.38",
