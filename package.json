@@ -9,9 +9,10 @@
     "name": "YunYouJun"
   },
   "license": "MIT",
+  "homepage": "https://fc.yunle.fun",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ElpsyCN/fc"
+    "url": "https://github.com/YunLeFun/fc"
   },
   "scripts": {
     "dev": "vite",

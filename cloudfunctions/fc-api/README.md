@@ -14,7 +14,7 @@ FC 静态站点的最小同源 BFF。它验证云乐坊 SSO 双证明、签发�
 ## Environment
 
 - `CLOUDBASE_ENV_ID=yunlefun-8g7ybcxc7345c490`
-- `FC_ALLOWED_ORIGINS=https://fc.elpsy.cn`
+- `FC_ALLOWED_ORIGINS=https://fc.yunle.fun,https://fc.elpsy.cn`
 - `FC_MAX_CLOUD_SAVES=20`
 - `FC_SESSION_CSRF_SECRET`：至少 32 字符，只能通过函数环境 Secret 注入
 
@@ -34,4 +34,4 @@ FC 静态站点的最小同源 BFF。它验证云乐坊 SSO 双证明、签发�
 3. 执行 `pnpm build:function`，生成约 1 MiB 的单文件依赖包并部署 `.cloudbase/functions/fc-api`；产物不依赖云端安装 npm 包。
 4. 注入环境变量和 CSRF Secret，开放函数网关权限并绑定 `/fc-api`。
 5. 在 EdgeOne Makers 连接 Git 仓库并部署预览环境；仓库内 `cloud-functions/api/[[default]].js` 接管 `/api/*`。预览环境只验证静态资源、Functions 构建和 `/api/health`，因为 SSO/unsafe API 必须匹配精确生产 Origin。
-6. 确认上游 Registry、数据库、Function 与网关均已就绪后，将 `fc.elpsy.cn` 从 GitHub Pages 切换到 EdgeOne，再验证生产域名的登录、Cookie 和云存档；保留 DNS 回滚方案。
+6. 确认上游 Registry、数据库、Function 与网关均已就绪后，将 `fc.yunle.fun` 与兼容域名 `fc.elpsy.cn` 切换到 EdgeOne，再验证生产域名的登录、Cookie 和云存档；保留 DNS 回滚方案。

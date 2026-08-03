@@ -7,13 +7,14 @@ import app from './app.js'
 const { createApiHandler } = app
 
 const SESSION_TOKEN = 's'.repeat(43)
-const ORIGIN = 'https://fc.elpsy.cn'
+const ORIGIN = 'https://fc.yunle.fun'
+const LEGACY_ORIGIN = 'https://fc.elpsy.cn'
 
 class IdentityError extends Error {}
 
 function runtime() {
   return {
-    allowedOrigins: [ORIGIN],
+    allowedOrigins: [ORIGIN, LEGACY_ORIGIN],
     deriveCsrfToken: vi.fn(() => 'csrf-token'),
     identityError: IdentityError,
     maximumSaves: 20,

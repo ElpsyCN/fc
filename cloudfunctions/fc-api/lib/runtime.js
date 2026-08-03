@@ -27,7 +27,7 @@ function positiveInteger(raw, fallback) {
 }
 
 function allowedOrigins() {
-  const origins = (process.env.FC_ALLOWED_ORIGINS || 'https://fc.elpsy.cn')
+  const origins = (process.env.FC_ALLOWED_ORIGINS || 'https://fc.yunle.fun,https://fc.elpsy.cn')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean)
